@@ -1,0 +1,9 @@
+module.exports = {
+  preset: "ts-jest",
+  testEnvironment: "<%- testEnvironment %>",
+  testPathIgnorePatterns: ["<rootDir>/<%- projectRoot %>/", "<rootDir>/node_modules/", "/test-helper/", "/__test__/", "<rootDir>/.eslintrc.js"],
+  <%_ if (coverage) { _%>
+  coveragePathIgnorePatterns: ["<rootDir>/<%- projectRoot %>/", "<rootDir>/node_modules/", "/test-helper/", "/__test__/", "<rootDir>/.eslintrc.js"],
+  coverageThreshold: { global: { branches: 100, functions: 100, lines: 100, statements: 100 } },
+  <%_ } _%>
+};

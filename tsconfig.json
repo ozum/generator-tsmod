@@ -1,0 +1,6 @@
+{
+  "extends": "./module-files/configs/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "generators"
+  }
+}

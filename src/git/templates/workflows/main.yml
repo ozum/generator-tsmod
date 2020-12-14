@@ -1,0 +1,117 @@
+name: CI / CD
+on:
+  push:
+    branches: [master, next, next-major, alpha, beta]
+  pull_request:
+    branches: ["*"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo ${{github.ref}} # if: github.event_name == 'push'  && github.ref == 'refs/heads/master' ---> Push && Master
+
+      - run: echo Condition met
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+      - name: Begin CI...
+        uses: actions/checkout@v2
+
+      - name: Use Node 12
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      # - name: Cache node modules (npm)
+      #   uses: actions/cache@v1
+      #   with:
+      #     path: ~/.npm # npm cache files are stored in `~/.npm` on Linux/macOS
+      #     key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-npm-
+
+      - name: Cache node modules (yarn)
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn # npm install --no-audit # `npm ci` is not used, because `node_modules` are cached, and `npm ci` deletes `node_modules`.
+        env:
+          CI: true
+
+      - name: Run ESLint
+        run: yarn lint --no-fix
+
+      - name: Run Prettier
+        run: yarn format --no-write --check
+
+      # - name: Run linters
+      #   uses: samuelmeuli/lint-action@v1
+      #   with:
+      #     github_token: ${{ secrets.github_token }}
+      #     eslint: true
+      #     eslint_extensions: js,jsx,ts,tsx,vue
+      #     eslint_args: --max-warnings 0 'src/**/*.+(js|jsx|ts|tsx|vue)'
+      #     prettier: true
+      #     prettier_extensions: json,less,css,md,gql,graphql,html,yaml
+      #     prettier_args: --ignore-path .eslintignore
+
+      # - name: Lint and create report
+      #   run: yarn lint --output-file eslint_report.json --format json
+      #   continue-on-error: true
+
+      # - name: Annotate linting results
+      #   uses: ataylorme/eslint-annotate-action@1.0.4
+      #   with:
+      #     repo-token: "${{ secrets.GITHUB_TOKEN }}"
+      #     report-json: "eslint_report.json"
+
+      # - name: Upload ESLint report
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: eslint_report.json
+      #     path: eslint_report.json
+
+      # - name: Check format
+      #   run: yarn format
+
+      # - name: Wait for ESLint
+      #   uses: fountainhead/action-wait-for-check@v1.0.0
+      #   id: wait-for-eslint
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     checkName: ESLint
+      #     ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      # - name: Wait for Prettier
+      #   uses: fountainhead/action-wait-for-check@v1.0.0
+      #   id: wait-for-prettier
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     checkName: Prettier
+      #     ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      # - name: Do something with a passing build
+      #   run: exit 1
+      #   if: steps.wait-for-eslint.outputs.conclusion != 'success' || steps.wait-for-prettier.outputs.conclusion != 'success'
+
+      - name: Test
+        run: yarn test --ci --coverage --maxWorkers=2
+        env:
+          CI: true
+
+      - name: Build
+        run: yarn build
+        env:
+          CI: true
+
+      - name: Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
