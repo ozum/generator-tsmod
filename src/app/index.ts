@@ -85,7 +85,7 @@ export default class extends Generator<Options> {
       keywords: this.props.keywords,
       engines: { node: ">= 12.0.0" },
       scripts: {
-        "yo:update": "yo tsmodule:uninstall --no-install --force && yo tsmodule",
+        "yo:update": "yo tsmod:uninstall --no-install --force && yo tsmod",
       },
     });
 

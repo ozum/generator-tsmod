@@ -41,19 +41,19 @@ npm install -g generator-tsmod
 - Generate project scaffold. Also executes `npm init` if no `package.json` found.
 
 ```sh
-yo tsmodule
+yo tsmod
 ```
 
 - Generate project scaffold with additional options.
 
 ```sh
-yo tsmodule --vuepress --typedoc --license MIT --no-coverage
+yo tsmod --vuepress --typedoc --license MIT --no-coverage
 ```
 
 - Remove generated but unmodified files safely. `--no-install` prevents running `npm install` command.
 
 ```sh
-yo tsmodule:uninstall --no-install --force
+yo tsmod:uninstall --no-install --force
 ```
 
 - Update already generated project using auto created `yo:update` script from `package.json`.
@@ -131,7 +131,7 @@ This is a yeoman generator which is used to create TypeScript project. It featur
 ## Uninstall
 
 ```sh
-yo tsmodule:uninstall --force --no-install
+yo tsmod:uninstall --force --no-install
 ```
 
 Above command removes non-user modifiable files and other files not modified by user from project. Also removes added configurations if they are not modified by user. To track modifications, this module uses Yeoman config file `.yo-rc.json`. `--no-install` prevents `npm install` usually not mandatory after dependencies are removed, to speed up uninstall.

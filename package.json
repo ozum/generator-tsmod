@@ -40,7 +40,7 @@
     "prebuild": "del-cli generators/ && copyup --all --exclude \"**/*.ts\" \"src/**/*\" generators",
     "prepublishonly": "pinst --disable",
     "update-packages": "find src -name \"package.json\" -exec ncu -u --packageFile {} \\;",
-    "yo:update": "cp src/typescript/templates/tsconfig.base.json module-files/configs/tsconfig.json && npm run build && yo tsmodule:uninstall --no-install --force && yo tsmodule --no-boilerplate --no-coverage --projectRoot generators"
+    "yo:update": "cp src/typescript/templates/tsconfig.base.json module-files/configs/tsconfig.json && npm run build && yo tsmod:uninstall --no-install --force && yo tsmod --no-boilerplate --no-coverage --projectRoot generators"
   },
   "dependencies": {
     "@swc/core": "^1.2.40",
