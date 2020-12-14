@@ -25,7 +25,7 @@ export default class extends Generator<Options> {
     const pkg = this.readDestinationPackage();
 
     this.copyTemplate(".gitattributes", ".gitattributes");
-    this.copyTemplate("_gitignore", ".gitignore");
+    this.copyTemplateNoLog("_gitignore", ".gitignore");
     this.copyTemplate("workflows/main.yml", ".github/workflows/main.yml");
     this.copyTemplate(".commitlintrc", ".commitlintrc");
     this.copyTemplate(".czrc", ".czrc");

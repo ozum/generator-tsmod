@@ -258,6 +258,16 @@ export default class<T extends Generator.GeneratorOptions = Options> extends Gen
     if (this.isSafe(args[1])) super.copyTemplate(...args);
   }
 
+  /** Copy template, but do not add to log. */
+  protected copyTemplateNoLog(...args: Parameters<Generator["copyTemplate"]>): ReturnType<Generator["copyTemplate"]> {
+    super.copyTemplate(...args);
+  }
+
+  /** Render template, but do not add to log. */
+  protected renderTemplateNoLog(...args: Parameters<Generator["renderTemplate"]>): ReturnType<Generator["renderTemplate"]> {
+    super.renderTemplate(...args);
+  }
+
   /** Renden only if destination file is created by this generator, but do not add to log. */
   protected renderTemplateSafeNoLog(...args: Parameters<Generator["renderTemplate"]>): ReturnType<Generator["renderTemplate"]> {
     const destination = getStringPath(args[1] ?? args[0]);

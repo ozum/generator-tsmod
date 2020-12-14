@@ -81,7 +81,12 @@ export default class extends Generator<Options> {
       version: "0.0.0",
       description: this.props.description,
       author: this.props.author,
-      files: [`${this.options.projectRoot}/**/!(*.spec|*.test)*.*`, `!${this.options.projectRoot}/**/__test__`, "module-files"],
+      files: [
+        this.options.projectRoot,
+        `!${this.options.projectRoot}/**/@(*.spec|*.test)*`,
+        `!${this.options.projectRoot}/**/__test__`,
+        "module-files",
+      ],
       keywords: this.props.keywords,
       engines: { node: ">= 12.0.0" },
       scripts: {

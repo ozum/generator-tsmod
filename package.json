@@ -17,7 +17,8 @@
   "main": "generators/index.js",
   "types": "generators/index.d.ts",
   "files": [
-    "generators/**/!(*.spec|*.test)*.*",
+    "generators",
+    "!generators/**/@(*.spec|*.test)*",
     "!generators/**/__test__",
     "module-files",
     "@types"
@@ -40,7 +41,7 @@
     "prebuild": "del-cli generators/ && copyup --all --exclude \"**/*.ts\" \"src/**/*\" generators",
     "prepublishOnly": "pinst --disable",
     "update-packages": "find src -name \"package.json\" -exec ncu -u --packageFile {} \\;",
-    "yo:update": "cp src/typescript/templates/tsconfig.base.json module-files/configs/tsconfig.json && npm run build && yo tsmod:uninstall --no-install --force && yo tsmod --no-boilerplate --no-coverage --projectRoot generators"
+    "yo:update": "mkdir -p module-files/configs && cp src/typescript/templates/tsconfig.base.json module-files/configs/tsconfig.json && npm run build && yo tsmod:uninstall --no-install --force && yo tsmod --no-boilerplate --no-coverage --projectRoot generators"
   },
   "dependencies": {
     "@swc/core": "^1.2.40",

@@ -13,4 +13,8 @@ export default class extends Generator {
     this.copyScripts("postinstall", "prepublish", "postpublish");
     this.copyDependencies("husky");
   }
+
+  protected end(): void {
+    this.spawnCommand("node_modules/.bin/husky", ["install"]);
+  }
 }
