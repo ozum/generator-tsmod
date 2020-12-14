@@ -3,7 +3,7 @@ import Generator from "../generator";
 /** Enables husky support. */
 export default class extends Generator {
   protected configuring(): void {
-    const sourceScripts = this.readSourcePackage().scripts;
+    const sourceScripts = this.readSourcePackage().scripts || {};
     this.copyTemplate(".husky/commit-msg", ".husky/commit-msg");
     this.copyTemplate(".husky/pre-commit", ".husky/pre-commit");
     this.copyTemplate(".husky/prepare-commit-msg", ".husky/prepare-commit-msg");
@@ -13,7 +13,7 @@ export default class extends Generator {
     this.addCreatedDir(".husky");
     this.copyScripts("prepublishOnly", "postpublish");
     this.copyDependencies("husky");
-    this.mergePackage({ scripts: { postinstall: sourceScripts?.postinstall ?? sourceScripts?._postinstall } });
+    this.mergePackage({ scripts: { postinstall: sourceScripts.postinstall ?? sourceScripts._postinstall } });
   }
 
   protected end(): void {

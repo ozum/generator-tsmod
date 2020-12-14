@@ -39,8 +39,18 @@ export default class extends Generator<Options> {
 
   /** Copy dependencies and configuration files and add `test` script to `package.json`. */
   protected configuring(): void {
+    this._deleteDefaultTestScript();
     this.copyDependencies("@types/jest", "jest", "ts-jest");
     this.copyScripts("test");
     this.copyConfig("jest.config.js", undefined, this.props);
+  }
+
+  protected _deleteDefaultTestScript(): void {
+    const destinationPackage = this.readDestinationPackage();
+    const destinationTestScript = destinationPackage.scripts?.test || "";
+    if (destinationTestScript.includes("no test specified")) {
+      delete destinationPackage?.scripts?.test;
+      this.writeDestinationJSON("package.json", destinationPackage);
+    }
   }
 }
