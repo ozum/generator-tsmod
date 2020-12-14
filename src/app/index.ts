@@ -37,16 +37,7 @@ interface Options {
 }
 
 export default class extends Generator<Options> {
-  private readonly pkg: PackageJson = this.readDestinationPackage();
-  private props: Props = {
-    name: this.options.name ?? this.pkg.name,
-    description: this.pkg.description,
-    version: this.pkg.version,
-    homepage: this.pkg.homepage,
-    repositoryName: this.options.repositoryName || (this.pkg.repository as string) || this.options.name || this.pkg.name,
-    githubAccount: this.options.githubAccount,
-    author: parseAuthor(this.pkg.author),
-  };
+  private props: Props = {} as any;
 
   protected constructor(args: string | string[], options: Options) {
     super(args, options);
@@ -67,7 +58,17 @@ export default class extends Generator<Options> {
 
   protected async initializing(): Promise<void> {
     if (!this.existsDestination("package.json")) this.spawnCommandSync("npm", ["init"]);
-    this.props.githubAccount = this.props.githubAccount ?? (await readGitUser()).username ?? this.props.scopeName;
+    const pkg = this.readDestinationPackage();
+
+    this.props = {
+      name: this.options.name ?? pkg.name,
+      description: pkg.description,
+      version: pkg.version,
+      homepage: pkg.homepage,
+      repositoryName: this.options.repositoryName || (pkg.repository as string) || this.options.name || pkg.name,
+      githubAccount: this.options.githubAccount ?? (await readGitUser()).username ?? this.props.scopeName,
+      author: parseAuthor(pkg.author),
+    };
   }
 
   protected async prompting(): Promise<void> {
@@ -94,6 +95,8 @@ export default class extends Generator<Options> {
       },
     });
 
+    const pkg = this.readDestinationPackage();
+
     this.copyScripts("release");
 
     this.composeWith(require.resolve("../editorconfig"));
@@ -117,7 +120,7 @@ export default class extends Generator<Options> {
     if (this.options.boilerplate)
       this.composeWith(require.resolve("../boilerplate"), { arguments: ["index.ts"], dir: "src", testPlace: "root" });
 
-    if (this.options.license && !this.pkg.license) {
+    if (this.options.license && !pkg.license) {
       this.composeWith(require.resolve("generator-license/app"), {
         name: this.props.author?.name,
         email: this.props.author?.email,
@@ -135,6 +138,7 @@ export default class extends Generator<Options> {
   }
 
   private async _fillDetails(): Promise<void> {
+    const pkg = this.readDestinationPackage();
     const prompts = [
       { name: "description", message: "Description", when: !this.props.description },
       { name: "homepage", message: "Project homepage url", when: !this.props.homepage, default: this._urlFromOption },
@@ -144,7 +148,7 @@ export default class extends Generator<Options> {
       {
         name: "keywords",
         message: "Package keywords (comma to split)",
-        when: !this.pkg.keywords,
+        when: !pkg.keywords,
         filter: (words: string) => words.split(/\s*,\s*/g),
       },
       {
