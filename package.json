@@ -70,6 +70,7 @@
     "object-hash": "^2.0.3",
     "parse-author": "^2.0.0",
     "read-git-user": "^2.1.0",
+    "tslib": "^2.0.1",
     "user-meta": "^1.0.0",
     "validate-npm-package-name": "^3.0.0",
     "yeoman-generator": "^4.12.0"
@@ -100,8 +101,8 @@
     "@types/parse-author": "^2.0.0",
     "@types/validate-npm-package-name": "^3.0.2",
     "@types/yeoman-generator": "^4.11.3",
-    "@typescript-eslint/eslint-plugin": "^4.9.1",
-    "@typescript-eslint/parser": "^4.9.1",
+    "@typescript-eslint/eslint-plugin": "^4.10.0",
+    "@typescript-eslint/parser": "^4.10.0",
     "commitizen": "^4.1.2",
     "copyfiles": "^2.4.1",
     "del-cli": "^3.0.1",
@@ -121,7 +122,6 @@
     "readmeasy": "^0.2.7",
     "ts-jest": "^26.2.0",
     "ts-node-dev": "^1.1.1",
-    "tslib": "^2.0.1",
     "typescript": "^4.1.3"
   }
 }
