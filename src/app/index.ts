@@ -3,9 +3,12 @@ import path from "path";
 import askName from "inquirer-npm-name";
 import type { JSONSchemaForNPMPackageJsonFiles as PackageJson } from "@schemastore/package";
 import readGitUser from "read-git-user";
+import { promises } from "fs";
 import Generator from "../generator";
 import { parseModuleName, parseAuthor, validatePackageName } from "./util";
 import type { Person } from "./util";
+
+const { readFile } = promises;
 
 const { name: authorName, email: authorEmail, url: authorUrl } = require("user-meta"); // eslint-disable-line @typescript-eslint/no-var-requires
 
@@ -57,9 +60,9 @@ export default class extends Generator<Options> {
   }
 
   protected async initializing(): Promise<void> {
-    if (!this.existsDestination("package.json")) this.spawnCommandSync("npm", ["init"]);
-    const pkg = this.readDestinationPackage();
+    if (!this.existsDestination("package.json")) await this._npmInit();
 
+    const pkg = this.readDestinationPackage();
     this.props = {
       name: this.options.name ?? pkg.name,
       description: pkg.description,
@@ -69,6 +72,16 @@ export default class extends Generator<Options> {
       githubAccount: this.options.githubAccount ?? (await readGitUser()).username ?? this.props.scopeName,
       author: parseAuthor(pkg.author),
     };
+  }
+
+  /**
+   * If `package.json` does not exists, executes `npm init`. However `mem-fs` of Yeoman could not know that `package.json` is created.
+   * Use `mem-fs`s own methods to inform it newly created `package.json`.
+   */
+  protected async _npmInit(): Promise<void> {
+    this.spawnCommandSync("npm", ["init"]);
+    const pkg = await readFile(this.destinationPath("package.json"), { encoding: "utf8" });
+    this.writeDestination("package.json", pkg);
   }
 
   protected async prompting(): Promise<void> {
