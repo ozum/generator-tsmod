@@ -1,7 +1,6 @@
 {
-  "extends": "./module-files/configs/tsconfig.json"<%_ if (projectRoot) { _%>,
+  "extends": "./module-files/configs/tsconfig.json"<% if (projectRoot && projectRoot !== "dist") { %>,
   "compilerOptions": {
     "outDir": "<%- projectRoot -%>"
-  }
-  <%_ } _%>
+  }<% } %>
 }
