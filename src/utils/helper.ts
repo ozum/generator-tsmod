@@ -48,6 +48,7 @@ const packageKeysStart = [
   "scripts",
   "shields",
   "identities",
+  "vuepress",
 ];
 
 const packageKeysEnd = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];

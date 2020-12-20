@@ -125,7 +125,7 @@ export default class<T extends Generator.GeneratorOptions = Options> extends Gen
 
   /** Read and return this module's `package.json` JSON data as object. */
   protected readSourcePackage(): PackageJson {
-    return this.fs.readJSON(join(__dirname, "../package.json")) as PackageJson;
+    return this.fs.readJSON(this.templatePath("../../../package.json")) as PackageJson;
   }
 
   /** Read and return `package.json` file located in templates directory. `undefined` if not available.  */

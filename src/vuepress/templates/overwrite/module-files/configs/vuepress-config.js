@@ -1,13 +1,13 @@
-const getVuePressBars = require("vuepress-bar");
+const getVuePressBars = require("vuepress-bar"); // eslint-disable-line import/no-extraneous-dependencies
+const { join } = require("path");
 const packageData = require("../../package.json");
 
-const { nav, sidebar } = getVuePressBars(`${__dirname}/..`);
-const vuepressConfig = require("../../.devkeeperrc.json").vuepress || {}; // eslint-disable-line global-require
+const GOOGLE_ANALYTICS_ID = packageData.vuepress?.["google-analytics-id"];
 
+const { nav, sidebar } = getVuePressBars(join(__dirname), "../../docs/.vuepress");
 const plugins = ["@vuepress/active-header-links", "@vuepress/pwa"];
 
-if (vuepressConfig.googleAnalytics && vuepressConfig.googleAnalytics.id)
-  plugins.push(["@vuepress/google-analytics", { ga: vuepressConfig.googleAnalytics.id }]);
+if (GOOGLE_ANALYTICS_ID) plugins.push(["@vuepress/google-analytics", { ga: GOOGLE_ANALYTICS_ID }]);
 
 module.exports = {
   title: packageData.label || packageData.name,
