@@ -34,12 +34,17 @@ export default class extends BaseGenerator {
     // Delete added data from JSON files.
     Object.keys(config.addedData || {}).forEach((file) => {
       const dataFromFile = this.readDestinationJSON(file) as Record<string, any>;
-      Object.entries(config.addedData[file])
+      Object.entries(config.addedData[file]?.safe || {})
         .filter(([dataPath, value]) => isEqual(get(dataFromFile, dataPath), value))
         .forEach(([dataPath]) => {
           unset(dataFromFile, dataPath);
-          delete config.addedData[file][dataPath];
+          delete config.addedData[file].safe[dataPath];
         });
+
+      Object.entries(config.addedData[file]?.normal || {}).forEach(([dataPath]) => {
+        unset(dataFromFile, dataPath);
+        delete config.addedData[file].normal[dataPath];
+      });
 
       this.writeDestinationJSON(file, deepClean(dataFromFile));
     });

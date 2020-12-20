@@ -1,4 +1,5 @@
 import uniq from "lodash.uniq";
+
 import isEqual from "lodash.isequal";
 import get from "lodash.get";
 import set from "lodash.set";
@@ -9,8 +10,8 @@ import type { JSONSchemaForNPMPackageJsonFiles as PackageJson } from "@schemasto
 import { extname } from "path";
 import _hash from "object-hash";
 import { promises } from "fs";
-
 import swc = require("@swc/core");
+import type { AddedData, File } from "../generator"; // eslint-disable-line @typescript-eslint/no-unused-vars,  import/first
 
 const { stat } = promises;
 
@@ -20,9 +21,9 @@ export type HashOptions = Parameters<typeof _hash>[1];
  * .yo-rc.json configuration structure.
  */
 export interface Config {
-  addedFilesSafe: Record<string, string>;
-  addedFiles: string[];
-  addedData: Record<string, Record<string, string>>;
+  addedFilesSafe: Record<File, string>; // file_name: sha1
+  addedFiles: File[];
+  addedData: Record<File, AddedData>;
   createdDirs: string[];
 }
 

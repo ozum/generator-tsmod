@@ -14,30 +14,36 @@ import { merge } from "./utils/merge";
 
 export type { PackageJson };
 
-interface Options {
-  install: boolean;
+const DependencyTypes = ["dependencies", "devDependencies", "peerDependencies"];
+
+export type File = string;
+type Hash = string;
+type DependencyName = string;
+type Version = string;
+type DataPath = string;
+
+export interface AddedData {
+  normal: Record<DataPath, any>;
+  safe: Record<DataPath, any>;
 }
 
 interface MergeOptions {
   rootPath?: string | string[];
   overwrite?: boolean;
   sort?: { start?: string[]; end?: string[] };
+  safe?: boolean;
 }
 
-const DependencyTypes = ["dependencies", "devDependencies", "peerDependencies"];
-
-type File = string;
-type Hash = string;
-type DependencyName = string;
-type Version = string;
-type DataPath = string;
+interface Options {
+  install: boolean;
+}
 
 export default class<T extends Generator.GeneratorOptions = Options> extends Generator<T> {
   #fileSafety: Map<File, boolean> = new Map();
   #fileHashes: Record<File, Hash> = {};
   #fileModificationTimes: Record<File, Date | undefined> = {};
   #initialDependencies: Record<File, Record<DependencyName, Version>> = this.snaphotDependencies();
-  #addedData?: Record<File, Record<DataPath, any>>;
+  #addedData?: Record<File, AddedData>;
   #packageModified = false;
   #manualAddedFiles: string[] = [];
 
@@ -89,7 +95,7 @@ export default class<T extends Generator.GeneratorOptions = Options> extends Gen
       if (this.#addedData?.[file]) {
         const oldData = this.config.getPath(["addedData", file] as any);
         const newData = this.#addedData[file];
-        if (!isEqual(oldData, newData)) this.config.setPath(["addedData", file] as any, sortKeys(newData));
+        if (!isEqual(oldData, newData)) this.config.setPath(["addedData", file] as any, sortKeys(sortKeys(newData, "safe"), "normal"));
       } else if (!this.existsDestination(file)) {
         delete addedFilesSafe[file];
         addedFiles.delete(file);
@@ -134,12 +140,12 @@ export default class<T extends Generator.GeneratorOptions = Options> extends Gen
   }
 
   /** Merges given data with destination `package.json` and writes it after ordering keys. */
-  protected mergePackage(data: Partial<PackageJson>, { overwrite = false } = {}): void {
+  protected mergePackage(data: Partial<PackageJson>, { overwrite, safe }: { overwrite?: boolean; safe?: boolean } = {}): void {
     this.#packageModified = true;
-    return this.mergeFile("package.json", data, { overwrite });
+    return this.mergeFile("package.json", data, { overwrite, safe });
   }
 
-  private get tempAddedData(): Record<string, any> {
+  private get tempAddedData(): Record<File, AddedData> {
     let tempData;
     if (!this.existsDestination("temp-added-data.json")) {
       tempData = this.config.getPath("addedData") || {};
@@ -151,17 +157,19 @@ export default class<T extends Generator.GeneratorOptions = Options> extends Gen
     return tempData;
   }
 
-  protected mergeFile(file: string, newData: JSONSchema7Object, { overwrite = true, sort, rootPath = [] }: MergeOptions = {}): void {
+  protected mergeFile(file: string, newData: JSONSchema7Object, { overwrite, sort, rootPath = [], safe = true }: MergeOptions = {}): void {
+    const type: keyof AddedData = safe ? "safe" : "normal";
     let data = this.readDestinationJSON(join(this.options.generateInto || "", file), {}) as JSONSchema7Object;
     const addedData = this.tempAddedData;
-    let log = addedData[file] || {};
+    addedData[file] = addedData[file] ?? {};
+    let log = addedData[file][type] || {};
 
     [data, log] = merge(log, data, newData, overwrite, rootPath);
     if (sort) data = sortKeys(data, rootPath, sort);
 
     this.writeDestinationJSON(file, data);
     this.#fileModificationTimes[file] = undefined;
-    addedData[file] = log;
+    addedData[file][type] = log;
     this.writeDestinationJSON("temp-added-data.json", addedData);
   }
 
@@ -220,7 +228,7 @@ export default class<T extends Generator.GeneratorOptions = Options> extends Gen
     // Copy all dependencies from template `package.json` (if available) to target `package.json`.
     types.filter((type) => templatePackage?.[type]).forEach((type) => (data[type] = { ...data[type], ...templatePackage?.[type] }));
 
-    this.mergePackage(data);
+    this.mergePackage(data, { safe: false });
   }
 
   copyTemplate = (...args: Parameters<Generator["copyTemplate"]>): ReturnType<Generator["copyTemplate"]> => {

@@ -3,10 +3,12 @@
     "createdDirs": ["module-files", ".github", ".husky"],
     "addedData": {
       "package.json": {
-        "engines.node": ">= 12.0.0",
-        "files": ["generators", "!generators/**/@(*.spec|*.test)*", "!generators/**/__test__", "module-files", "@types"],
-        "main": "generators/index.js",
-        "types": "generators/index.d.ts"
+        "safe": {
+          "engines.node": ">= 12.0.0",
+          "files": ["generators", "!generators/**/@(*.spec|*.test)*", "!generators/**/__test__", "module-files", "@types"],
+          "main": "generators/index.js",
+          "types": "generators/index.d.ts"
+        }
       }
     },
     "addedFilesSafe": {
