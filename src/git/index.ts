@@ -46,7 +46,7 @@ export default class extends Generator<Options> {
   }
 
   /** Init git and add remote origin. */
-  protected end(): void {
+  protected writing(): void {
     const pkg = this.readDestinationPackage();
     this.spawnCommandSync("git", ["init", "--quiet"], { cwd: this.destinationPath() });
     if (pkg.repository && !this.originUrl) {
