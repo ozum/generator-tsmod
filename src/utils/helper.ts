@@ -208,3 +208,17 @@ export async function getFileModificationTime(file: string): Promise<Date | unde
 export function getStringPath(filePath: string | string[]): string {
   return Array.isArray(filePath) ? filePath.join("/") : filePath;
 }
+
+/**
+ * Gets CLI commands from argv and single quotes every parameter.
+ *
+ * @example
+ * $ --some "a v" x y
+ * getArgv(); // => '--some' 'a v' 'x' 'y'
+ */
+export function getArgv(): string {
+  return process.argv
+    .slice(2)
+    .map((arg) => `'${arg.replace(/'/g, "'\\''")}'`)
+    .join(" ");
+}

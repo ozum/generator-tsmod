@@ -7,6 +7,7 @@ import { promises } from "fs";
 import Generator from "../generator";
 import { parseModuleName, parseAuthor, validatePackageName } from "./util";
 import type { Person } from "./util";
+import { getArgv } from "../utils/helper";
 
 const { readFile } = promises;
 
@@ -37,6 +38,7 @@ interface Options {
   typedoc: boolean;
   coverage: boolean;
   reinstall: boolean;
+  importHelpers: boolean;
 }
 
 export default class extends Generator<Options> {
@@ -55,6 +57,7 @@ export default class extends Generator<Options> {
     this.option("coverage", { type: Boolean, description: "Add test coverage requirement" });
     this.option("vuepress", { type: Boolean, description: "Add VuePress site support" });
     this.option("typedoc", { type: Boolean, description: "Add TypeDoc support" });
+    this.option("importHelpers", { type: Boolean, default: true, description: "Import emit helpers from 'tslib'. schema for TypeScript" });
     const nameError = validatePackageName(this.options.name);
     if (nameError) this.emit("error", nameError);
   }
@@ -104,7 +107,7 @@ export default class extends Generator<Options> {
       keywords: this.props.keywords,
       engines: { node: ">= 12.0.0" },
       scripts: {
-        "yo:update": "yo tsmod:uninstall --no-install --force && yo tsmod",
+        "yo:update": `yo tsmod:uninstall --no-install --force && yo ${getArgv()}`,
       },
     });
 
@@ -126,7 +129,10 @@ export default class extends Generator<Options> {
 
     if (this.options.typedoc) this.composeWith(require.resolve("../typedoc"), { vuepress: this.options.vuepress });
 
-    this.composeWith(require.resolve("../typescript"), { projectRoot: this.options.projectRoot });
+    this.composeWith(require.resolve("../typescript"), {
+      projectRoot: this.options.projectRoot,
+      importHelpers: this.options.importHelpers,
+    });
 
     if (this.options.vuepress) this.composeWith(require.resolve("../vuepress"), { vuepress: this.options.vuepress });
 
