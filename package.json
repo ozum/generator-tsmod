@@ -31,7 +31,7 @@
     "execute": "ts-node --transpile-only --compiler-options '{ \"module\": \"commonjs\" }'",
     "watch": "ts-node-dev --no-notify --respawn --transpile-only --compiler-options '{ \"module\": \"commonjs\" }'",
     "lint": "eslint --ignore-path .gitignore --cache --max-warnings 0 --ext js,jsx,ts,tsx,vue --fix .",
-    "format": "prettier --write",
+    "format": "prettier . --write",
     "release": "npm run readme && git pull && git add -A && git commit && git push --follow-tags",
     "test": "jest --coverage",
     "readme": "if grep -q '{% include \"api.md\" %}' 'README.njk'; then npm run typedoc:single-md; mkdir -p temp && mv api.md temp/; fi && readmeasy --partial-dirs temp,module-files/template-partials && rm -rf temp",

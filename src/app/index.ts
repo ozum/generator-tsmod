@@ -139,12 +139,15 @@ export default class extends Generator<Options> {
     if (this.options.boilerplate)
       this.composeWith(require.resolve("../boilerplate"), { arguments: ["index.ts"], dir: "src", testPlace: "root" });
 
-    if (this.options.license && !pkg.license) {
+    if ((this.options.license || pkg.license) && !this.existsDestination("LICENSE")) {
       this.composeWith(require.resolve("generator-license/app"), {
         name: this.props.author?.name,
         email: this.props.author?.email,
         website: this.props.author?.url,
+        license: pkg.license,
+        defaultLicense: "MIT",
       });
+      this.addToAddedFiles("LICENSE");
     }
   }
 
