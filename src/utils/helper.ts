@@ -159,7 +159,7 @@ function parseObject(content: string, rootDataPath?: string | string[]): { forma
   }
 
   try {
-    const data = yaml.safeLoad(content);
+    const data = yaml.load(content);
     return { format: "yaml", data: rootDataPath ? get(data, rootDataPath as any) : data };
   } catch (error) {
     errors.push(error);

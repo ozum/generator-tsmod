@@ -318,4 +318,4 @@ docs/nav.02.api
 .rts2*
 
 # iCloud Related
-node_modules.nosync
+*.nosync

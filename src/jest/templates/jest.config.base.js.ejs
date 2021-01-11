@@ -6,4 +6,5 @@ module.exports = {
   coveragePathIgnorePatterns: ["<rootDir>/<%- projectRoot %>/", "<rootDir>/node_modules/", "<rootDir>/node_modules.nosync/", "/test-helper/", "/__test__/", "<rootDir>/.eslintrc.js"],
   coverageThreshold: { global: { branches: 100, functions: 100, lines: 100, statements: 100 } },
   <%_ } _%>
+  modulePathIgnorePatterns: ["<rootDir>/node_modules.nosync/"],
 };

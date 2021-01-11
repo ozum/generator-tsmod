@@ -3,7 +3,7 @@ import get from "lodash.get";
 import unset from "lodash.unset";
 import isEqual from "lodash.isequal";
 import isEmpty from "lodash.isempty";
-import deepClean from "deep-cleaner";
+import deepClean from "clean-deep";
 import deleteEmpty from "delete-empty";
 import type { Config } from "../utils/helper";
 
@@ -15,12 +15,15 @@ const CONFIG_TYPES: Array<keyof Config> = ["addedData", "addedFiles", "addedFile
 export default class extends BaseGenerator {
   /** Delete empty objects and arrays from config. */
   private _cleanEmptyConfig(): void {
+    // Get copy of config from file.
     const config = this.config.getAll() as Config;
 
-    // Clean empty config paths.
     CONFIG_TYPES.forEach((configType) => {
-      config[configType] = deepClean(config[configType]);
-      isEmpty(config[configType]) ? this.config.delete(configType) : this.config.set(configType, config[configType]);
+      // Clean empty config paths from copied config.
+      config[configType] = deepClean(config[configType]) as any;
+
+      // If key is empty delete it from original config.
+      if (isEmpty(config[configType])) this.config.delete(configType);
     });
   }
 

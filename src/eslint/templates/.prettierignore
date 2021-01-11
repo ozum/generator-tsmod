@@ -1,5 +1,5 @@
 node_modules
-node_modules.sync
+node_modules.nosync
 coverage
 dist
 build

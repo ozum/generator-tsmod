@@ -43,6 +43,7 @@ export default class extends Generator<Options> {
     this.copyDependencies("@types/jest", "jest", "ts-jest");
     this.copyScripts("test");
     this.copyConfig("jest.config.js", undefined, this.props);
+    this.copyTemplate("test/tsconfig.json", "test/tsconfig.json");
   }
 
   protected _deleteDefaultTestScript(): void {

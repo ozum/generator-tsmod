@@ -35,7 +35,8 @@
       "module-files/configs/lint-staged.config.js",
       "module-files/configs/prettier.config.js",
       "module-files/configs/tsconfig.json",
-      "module-files/template-partials/installation"
+      "module-files/template-partials/installation",
+      "test/tsconfig.json"
     ]
   }
 }
