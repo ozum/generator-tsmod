@@ -1,5 +1,6 @@
 import originUrl from "git-remote-origin-url";
 import Generator from "../generator";
+import type { OptionNames } from "../options";
 
 interface Options {
   githubAccount: string;
@@ -13,13 +14,8 @@ interface Options {
  * - Adds GitHub workflows.
  */
 export default class extends Generator<Options> {
+  protected static optionNames: OptionNames = ["githubAccount", "repositoryName"];
   private originUrl?: string;
-
-  protected constructor(args: string | string[], options: Options) {
-    super(args, options);
-    this.option("githubAccount", { type: String, description: "GitHub username or organization" });
-    this.option("repositoryName", { type: String, description: "Name of the GitHub repository" });
-  }
 
   protected async configuring(): Promise<void> {
     const pkg = this.readDestinationPackage();

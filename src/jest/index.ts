@@ -1,4 +1,5 @@
 import Generator from "../generator";
+import type { OptionNames } from "../options";
 
 const JEST_ENV = ["jsdom", "node"];
 
@@ -13,13 +14,7 @@ type Props = Options;
 /** Adds Jest configuration to project. */
 export default class extends Generator<Options> {
   private props: Props = this.options;
-
-  protected constructor(args: string | string[], options: Options) {
-    super(args, options);
-    this.option("testEnvironment", { type: String, description: "Test environment (jsdom or node)" });
-    this.option("projectRoot", { type: String, default: "dist", description: "Relative path to the project transpiled code root" });
-    this.option("coverage", { type: Boolean, default: true, description: "Add test coverage" }); // to disabel: --no-coverage
-  }
+  protected static optionNames: OptionNames = ["testEnvironment", "projectRoot", "coverage"];
 
   protected async prompting(): Promise<void> {
     const prompts = [

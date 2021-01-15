@@ -6,6 +6,7 @@ import isEmpty from "lodash.isempty";
 import deepClean from "clean-deep";
 import deleteEmpty from "delete-empty";
 import type { Config } from "../utils/helper";
+import type { OptionNames } from "../options";
 
 import BaseGenerator from "../generator";
 
@@ -13,6 +14,8 @@ const CONFIG_TYPES: Array<keyof Config> = ["addedData", "addedFiles", "addedFile
 
 /**  Removes added files and configuration data added by this generator. */
 export default class extends BaseGenerator {
+  protected static optionNames: OptionNames = [];
+
   /** Delete empty objects and arrays from config. */
   private _cleanEmptyConfig(): void {
     // Get copy of config from file.

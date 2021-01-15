@@ -1,4 +1,5 @@
 import BaseGenerator from "../generator";
+import type { OptionNames } from "../options";
 
 interface Options {
   typedoc: boolean;
@@ -6,10 +7,7 @@ interface Options {
 
 /**  Configures project for `README.md` creation from `README.njk` using `readmeasy` package. */
 export default class extends BaseGenerator<Options> {
-  protected constructor(args: string | string[], options: Options) {
-    super(args, options);
-    this.option("typedoc", { type: Boolean, description: "Add TypeDoc support" });
-  }
+  protected static optionNames: OptionNames = ["typedoc"];
 
   protected configuring(): void {
     this.copyTemplate("installation", "module-files/template-partials/installation");

@@ -1,5 +1,6 @@
 import { join } from "path";
 import BaseGenerator from "../generator";
+import type { OptionNames } from "../options";
 
 interface Options {
   projectRoot: string;
@@ -8,11 +9,7 @@ interface Options {
 
 /**  Configures project for TypeScript. */
 export default class extends BaseGenerator<Options> {
-  protected constructor(args: string | string[], options: Options) {
-    super(args, options);
-    this.option("projectRoot", { type: String, default: "dist", description: "Relative path to the project transpiled code root" });
-    this.option("importHelpers", { type: Boolean, default: true, description: "Import emit helpers from 'tslib'. schema for TypeScript" });
-  }
+  protected static optionNames: OptionNames = ["projectRoot", "importHelpers"];
 
   /** Adds `main`, `types` and `files` entries to `package.json` and  copies `tsconfig.json` (if not exists)  and `tsconfig.base.json` (overwrites) files. */
   protected configuring(): void {

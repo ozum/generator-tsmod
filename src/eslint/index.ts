@@ -1,7 +1,10 @@
 import Generator from "../generator";
+import type { OptionNames } from "../options";
 
 /** Enables and configures ESLint by adding scripts and dependebcies from this module's `package.json`.  */
 export default class extends Generator {
+  protected static optionNames: OptionNames = [];
+
   /** Copies dependencies from this module to target module's package.json. Also modifies configurations. */
   protected configuring(): void {
     this.copyDependencies(

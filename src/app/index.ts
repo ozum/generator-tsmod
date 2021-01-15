@@ -8,6 +8,7 @@ import Generator from "../generator";
 import { parseModuleName, parseAuthor, validatePackageName } from "./util";
 import type { Person } from "./util";
 import { getArgv } from "../utils/helper";
+import { getOptions, OptionNames } from "../options";
 
 const { readFile } = promises;
 
@@ -43,21 +44,10 @@ interface Options {
 
 export default class extends Generator<Options> {
   private props: Props = {} as any;
+  protected static optionNames: OptionNames = Object.keys(getOptions.apply({ options: {} })) as OptionNames;
 
   protected constructor(args: string | string[], options: Options) {
     super(args, options);
-    this.option("boilerplate", { type: Boolean, default: true, description: "Include boilerplate files" });
-    this.option("cli", { type: Boolean, default: false, description: "Add a CLI" });
-    this.option("license", { type: Boolean, default: true, description: "Include a license" });
-    this.option("name", { type: String, description: "Project name" });
-    this.option("githubAccount", { type: String, description: "GitHub username or organization" });
-    this.option("repositoryName", { type: String, description: "Name of the GitHub repository" });
-    this.option("projectRoot", { type: String, default: "dist", description: "Relative path to the project transpiled code root" });
-    this.option("readme", { type: String, description: "Content to insert in the README.md file" });
-    this.option("coverage", { type: Boolean, description: "Add test coverage requirement" });
-    this.option("vuepress", { type: Boolean, description: "Add VuePress site support" });
-    this.option("typedoc", { type: Boolean, description: "Add TypeDoc support" });
-    this.option("importHelpers", { type: Boolean, default: true, description: "Import emit helpers from 'tslib'. schema for TypeScript" });
     const nameError = validatePackageName(this.options.name);
     if (nameError) this.emit("error", nameError);
   }
@@ -114,33 +104,21 @@ export default class extends Generator<Options> {
     const pkg = this.readDestinationPackage();
 
     this.copyScripts("release");
-
-    this.composeWith(require.resolve("../editorconfig"));
-    this.composeWith(require.resolve("../eslint"));
+    this.composeWith(require.resolve("../editorconfig"), this.options);
+    this.composeWith(require.resolve("../eslint"), this.options);
     this.composeWith(require.resolve("../git"), { githubAccount: this.props.githubAccount, repositoryName: this.props.repositoryName });
-    this.composeWith(require.resolve("../husky"));
-    this.composeWith(require.resolve("../jest"), {
-      projectRoot: this.options.projectRoot,
-      testEnvironment: "node",
-      coverage: this.options.coverage,
-    });
-    this.composeWith(require.resolve("../lint-staged"));
-    this.composeWith(require.resolve("../readme"), { typedoc: this.options.typedoc });
-
-    if (this.options.typedoc) this.composeWith(require.resolve("../typedoc"), { vuepress: this.options.vuepress });
-
-    this.composeWith(require.resolve("../typescript"), {
-      projectRoot: this.options.projectRoot,
-      importHelpers: this.options.importHelpers,
-    });
-
-    if (this.options.vuepress) this.composeWith(require.resolve("../vuepress"), { vuepress: this.options.vuepress });
-
+    this.composeWith(require.resolve("../husky"), this.options);
+    this.composeWith(require.resolve("../jest"), { testEnvironment: "node", ...this.options });
+    this.composeWith(require.resolve("../lint-staged"), this.options);
+    this.composeWith(require.resolve("../readme"), this.options);
+    if (this.options.typedoc) this.composeWith(require.resolve("../typedoc"), this.options);
+    this.composeWith(require.resolve("../typescript"), this.options);
+    if (this.options.vuepress) this.composeWith(require.resolve("../vuepress"), this.options);
     if (this.options.boilerplate)
-      this.composeWith(require.resolve("../boilerplate"), { arguments: ["index.ts"], dir: "src", testPlace: "root" });
-
+      this.composeWith(require.resolve("../boilerplate"), { arguments: ["index.ts"], dir: "src", testPlace: "root", ...this.options });
     if ((this.options.license || pkg.license) && !this.existsDestination("LICENSE")) {
       this.composeWith(require.resolve("generator-license/app"), {
+        ...this.options,
         name: this.props.author?.name,
         email: this.props.author?.email,
         website: this.props.author?.url,

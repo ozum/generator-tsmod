@@ -1,7 +1,10 @@
 import Generator from "../generator";
+import type { OptionNames } from "../options";
 
 /** Enables husky support. */
 export default class extends Generator {
+  protected static optionNames: OptionNames = [];
+
   protected configuring(): void {
     const sourceScripts = this.readSourcePackage().scripts || {};
     this.copyTemplate(".husky/commit-msg", ".husky/commit-msg");

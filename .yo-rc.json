@@ -1,5 +1,6 @@
 {
   "generator-tsmod": {
+    "createdDirs": ["module-files", ".github", ".husky"],
     "addedData": {
       "package.json": {
         "safe": {
@@ -11,7 +12,6 @@
         "normal": {}
       }
     },
-    "createdDirs": ["module-files", ".github", ".husky"],
     "addedFilesSafe": {
       "jest.config.js": "0bd134f06add10c42a03e4b115aef2a323e4b136",
       "lint-staged.config.js": "cbb09ecb17251589a793f69fea1a59c20f82a2c5",

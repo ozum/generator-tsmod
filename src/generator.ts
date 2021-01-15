@@ -11,6 +11,7 @@ import fastGlob from "fast-glob";
 import uniq from "lodash.uniq";
 import { sortKeys, sortPackageKeys, hash, getFileModificationTime, getStringPath } from "./utils/helper";
 import { merge } from "./utils/merge";
+import { getOptions, OptionNames } from "./options";
 
 export type { PackageJson };
 
@@ -38,7 +39,8 @@ interface Options {
   install: boolean;
 }
 
-export default class<T extends Generator.GeneratorOptions = Options> extends Generator<T> {
+export default abstract class Base<T extends Generator.GeneratorOptions = Options> extends Generator<T> {
+  protected static optionNames: OptionNames = [];
   #fileSafety: Map<File, boolean> = new Map();
   #fileHashes: Record<File, Hash> = {};
   #fileModificationTimes: Record<File, Date | undefined> = {};
@@ -49,6 +51,11 @@ export default class<T extends Generator.GeneratorOptions = Options> extends Gen
 
   protected constructor(args: string | string[], options: T) {
     super(args, options);
+
+    const subClassOptionNames = (this.constructor as any).optionNames as OptionNames; // Get static optionNames from sub class.
+    if (subClassOptionNames === undefined) throw new Error("Static 'optionNames' attribute is required in sub generators.");
+    const generatorOptions = getOptions.apply(this);
+    subClassOptionNames.forEach((name) => this.option(name, generatorOptions[name]));
 
     this.option("install", { type: Boolean, default: true, description: "Install if package dependencies changed" });
 

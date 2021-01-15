@@ -1,7 +1,10 @@
 import BaseGenerator from "../generator";
+import type { OptionNames } from "../options";
 
 /**  Enables VuePress support. */
 export default class extends BaseGenerator {
+  protected static optionNames: OptionNames = [];
+
   protected configuring(): void {
     this.copyScripts();
     this.copyDependencies();
