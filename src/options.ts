@@ -36,6 +36,14 @@ export function getOptions<T extends Generator.GeneratorOptions = Generator.Gene
       description: "Name of the component to test",
     },
 
+    /** not-sync */
+    notSyncDirs: {
+      type: String,
+      default: "node_modules, dist",
+      description:
+        "Directories (as CSV) to disable synchronization with cloud storage such as iCloudDrive, Dropbox or OneDirve. Use with empty string --not-sync-dirs '' to disable.",
+    },
+
     /** readme (Additionally: testPlace) */
 
     /** typescript (Additionally: projectRoot) */

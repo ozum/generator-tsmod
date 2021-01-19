@@ -7,12 +7,7 @@ interface Options {
 
 /**  Configures project for TypeDoc. */
 export default class extends BaseGenerator<Options> {
-  protected static optionNames: OptionNames = [];
-
-  protected constructor(args: string | string[], options: Options) {
-    super(args, options);
-    this.option("vuepress", { type: Boolean, description: "Add vuepress support" });
-  }
+  protected static optionNames: OptionNames = ["vuepress"];
 
   protected configuring(): void {
     const vuepress = this.options.vuepress ? "--platform vuepress" : "";

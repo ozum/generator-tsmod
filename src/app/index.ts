@@ -40,6 +40,7 @@ interface Options {
   coverage: boolean;
   reinstall: boolean;
   importHelpers: boolean;
+  notSyncDirs: string;
 }
 
 export default class extends Generator<Options> {
@@ -104,6 +105,7 @@ export default class extends Generator<Options> {
     const pkg = this.readDestinationPackage();
 
     this.copyScripts("release");
+    if (this.options.notSyncDirs.replace(/\s/g, "")) this.composeWith(require.resolve("../not-sync"), this.options);
     this.composeWith(require.resolve("../editorconfig"), this.options);
     this.composeWith(require.resolve("../eslint"), this.options);
     this.composeWith(require.resolve("../git"), { githubAccount: this.props.githubAccount, repositoryName: this.props.repositoryName });

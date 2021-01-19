@@ -319,3 +319,7 @@ docs/nav.02.api
 
 # iCloud Related
 *.nosync
+
+# iCloud Symlinked files
+node_modules
+dist

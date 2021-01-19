@@ -9,11 +9,9 @@ import yaml from "js-yaml";
 import type { JSONSchemaForNPMPackageJsonFiles as PackageJson } from "@schemastore/package"; // eslint-disable-line import/order
 import { extname } from "path";
 import _hash from "object-hash";
-import { promises } from "fs";
+import { promises as fs } from "fs";
 import swc = require("@swc/core");
 import type { AddedData, File } from "../generator"; // eslint-disable-line @typescript-eslint/no-unused-vars,  import/first
-
-const { stat } = promises;
 
 export type HashOptions = Parameters<typeof _hash>[1];
 
@@ -198,7 +196,7 @@ export function hash(rawData: unknown, options: { type?: "js" | "ts"; file?: str
 
 export async function getFileModificationTime(file: string): Promise<Date | undefined> {
   try {
-    return (await stat(file)).mtime;
+    return (await fs.stat(file)).mtime;
   } catch (error) {
     if (error.code === "ENOENT") return undefined;
     throw error;
