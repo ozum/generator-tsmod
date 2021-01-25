@@ -40,7 +40,8 @@ interface Options {
   coverage: boolean;
   reinstall: boolean;
   importHelpers: boolean;
-  notSyncDirs: string;
+  notSync: boolean;
+  notSyncPaths: string;
 }
 
 export default class extends Generator<Options> {
@@ -104,8 +105,16 @@ export default class extends Generator<Options> {
 
     const pkg = this.readDestinationPackage();
 
+    this.copyDependencies("walkdir");
+    this.copyTemplate("scripts/tsmod.js", path.join("module-files/scripts/tsmod.js"));
     this.copyScripts("release");
-    if (this.options.notSyncDirs.replace(/\s/g, "")) this.composeWith(require.resolve("../not-sync"), this.options);
+
+    // Because of combined input related more than one generator, "postinstall" script is written here. Not elegant, but required.
+    const postInstall = this.options.notSync || this.options.notSyncPaths ? "(husky install && npm run not-sync)" : "husky install";
+    this.mergePackage({ scripts: { postinstall: `is-ci || ${postInstall}` } });
+
+    // Compositions
+    if (this.options.notSync || this.options.notSyncPaths) this.composeWith(require.resolve("../not-sync"), this.options);
     this.composeWith(require.resolve("../editorconfig"), this.options);
     this.composeWith(require.resolve("../eslint"), this.options);
     this.composeWith(require.resolve("../git"), { githubAccount: this.props.githubAccount, repositoryName: this.props.repositoryName });

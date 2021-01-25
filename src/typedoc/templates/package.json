@@ -1,9 +1,9 @@
 {
   "devDependencies": {
     "concat-md": "^0.3.5",
-    "typedoc": "^0.20.16",
+    "typedoc": "^0.20.18",
     "typedoc-neo-theme": "^1.1.0",
     "typedoc-plugin-example-tag": "^1.0.2",
-    "typedoc-plugin-markdown": "^3.4.1"
+    "typedoc-plugin-markdown": "^3.4.3"
   }
 }

@@ -47,4 +47,16 @@ describe("utils/merge merge()", () => {
     expect(result[0]).toEqual(expectedData);
     expect(result[1]).toEqual(expectedLog);
   });
+
+  it("should create array and objects for non existing keys.", () => {
+    const log = {};
+    const data = {};
+    const newData = { a: [1], b: { x: 1 } };
+    const expectedData = { a: [1], b: { x: 1 } };
+    const expectedLog = { a: [1], "b.x": 1 };
+    const result = merge(log, data, newData, false);
+
+    expect(result[0]).toEqual(expectedData);
+    expect(result[1]).toEqual(expectedLog);
+  });
 });

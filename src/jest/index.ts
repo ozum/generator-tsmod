@@ -7,6 +7,8 @@ interface Options {
   testEnvironment: "jsdom" | "node";
   projectRoot: string;
   coverage: boolean;
+  notSync: boolean;
+  notSyncPaths: string;
 }
 
 type Props = Options;
@@ -14,7 +16,7 @@ type Props = Options;
 /** Adds Jest configuration to project. */
 export default class extends Generator<Options> {
   private props: Props = this.options;
-  protected static optionNames: OptionNames = ["testEnvironment", "projectRoot", "coverage"];
+  protected static optionNames: OptionNames = ["testEnvironment", "projectRoot", "coverage", "notSync", "notSyncPaths"];
 
   protected async prompting(): Promise<void> {
     const prompts = [
@@ -34,11 +36,14 @@ export default class extends Generator<Options> {
 
   /** Copy dependencies and configuration files and add `test` script to `package.json`. */
   protected configuring(): void {
+    const notSync = (this.options.notSync || this.options.notSyncPaths) && this.options.coverage ? "npm run not-sync && " : "";
+    const coverage = this.options.coverage ? " --coverage" : "";
+
     this._deleteDefaultTestScript();
     this.copyDependencies("@types/jest", "jest", "ts-jest");
-    this.copyScripts("test");
     this.copyConfig("jest.config.js", undefined, this.props);
     this.copyTemplate("test/tsconfig.json", "test/tsconfig.json");
+    this.mergePackage({ scripts: { test: `${notSync}jest${coverage}` } });
   }
 
   protected _deleteDefaultTestScript(): void {

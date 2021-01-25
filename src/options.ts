@@ -15,7 +15,7 @@ export function getOptions<T extends Generator.GeneratorOptions = Generator.Gene
     projectRoot: { type: String, default: "dist", description: "Relative path to the project transpiled code root" },
     readme: { type: String, description: "Content to insert in the README.md file" },
     vuepress: { type: Boolean, description: "Add VuePress site support" },
-    typedoc: { type: Boolean, description: "Add TypeDoc support" },
+    typedoc: { type: Boolean, default: true, description: "Add TypeDoc support" },
 
     /** Boilerplate */
     dir: { type: String, default: "src", description: "Directory to create source file into" },
@@ -37,11 +37,16 @@ export function getOptions<T extends Generator.GeneratorOptions = Generator.Gene
     },
 
     /** not-sync */
-    notSyncDirs: {
-      type: String,
-      default: "node_modules, dist",
+    notSync: {
+      type: Boolean,
+      default: true,
       description:
-        "Directories (as CSV) to disable synchronization with cloud storage such as iCloudDrive, Dropbox or OneDirve. Use with empty string --not-sync-dirs '' to disable.",
+        "Disable synchronization of default paths with cloud storage such as iCloudDrive, Dropbox or OneDirve. To add additional paths use --not-sync-paths.",
+    },
+
+    notSyncPaths: {
+      type: String,
+      description: "Directories (as CSV) to disable synchronization with cloud storage such as iCloudDrive, Dropbox or OneDirve.",
     },
 
     /** readme (Additionally: testPlace) */

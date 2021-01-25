@@ -7,9 +7,14 @@
           "engines.node": ">= 12.0.0",
           "files": ["generators", "!generators/**/@(*.spec|*.test)*", "!generators/**/__test__", "module-files", "@types"],
           "main": "generators/index.js",
+          "scripts.not-sync": "node module-files/scripts/tsmod.js not-sync generators,node_modules,coverage",
+          "scripts.postinstall": "is-ci || (husky install && npm run not-sync)",
+          "scripts.test": "npm run not-sync && jest --coverage",
           "types": "generators/index.d.ts"
         },
-        "normal": {}
+        "normal": {
+          "devDependencies.not-sync": "^1.1.1"
+        }
       }
     },
     "addedFilesSafe": {
@@ -35,6 +40,7 @@
       "module-files/configs/lint-staged.config.js",
       "module-files/configs/prettier.config.js",
       "module-files/configs/tsconfig.json",
+      "module-files/scripts/tsmod.js",
       "module-files/template-partials/installation",
       "test/tsconfig.json"
     ]
