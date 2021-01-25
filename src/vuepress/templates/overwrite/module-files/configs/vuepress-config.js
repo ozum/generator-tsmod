@@ -2,7 +2,7 @@ const getVuePressBars = require("vuepress-bar"); // eslint-disable-line import/n
 const { join } = require("path");
 const packageData = require("../../package.json");
 
-const GOOGLE_ANALYTICS_ID = packageData.vuepress?.["google-analytics-id"];
+const GOOGLE_ANALYTICS_ID = packageData.vuepress && packageData.vuepress["google-analytics-id"];
 
 const { nav, sidebar } = getVuePressBars(join(__dirname), "../../docs/.vuepress");
 const plugins = ["@vuepress/active-header-links", "@vuepress/pwa"];
