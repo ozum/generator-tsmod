@@ -1,4 +1,4 @@
-import { join } from "path";
+import { join, parse } from "path";
 import BaseGenerator from "../generator";
 import type { OptionNames } from "../options";
 
@@ -21,8 +21,9 @@ export default class extends BaseGenerator<Options> {
 
   /** Adds `main`, `types` and `files` entries to `package.json` and  copies `tsconfig.json` (if not exists)  and `tsconfig.base.json` (overwrites) files. */
   protected configuring(): void {
+    const { name } = parse(this.options.main || "index.js");
     this.mergePackage({
-      types: join(this.options.projectRoot, `${this.options.main}.d.ts`).replace(/\\/g, "/"),
+      types: join(this.options.projectRoot, `${name}.d.ts`).replace(/\\/g, "/"),
       files: ["@types"],
     });
 
@@ -46,10 +47,11 @@ export default class extends BaseGenerator<Options> {
   }
 
   protected _rollup(): void {
+    const { name } = parse(this.options.main || "index.js");
     this.mergePackage({
-      main: join(this.options.projectRoot, "cjs", `${this.options.main}.js`).replace(/\\/g, "/"),
-      module: join(this.options.projectRoot, "esm", `${this.options.main}.mjs`).replace(/\\/g, "/"),
-      "umd:main": join(this.options.projectRoot, "umd", `${this.options.main}.js`).replace(/\\/g, "/"),
+      main: join(this.options.projectRoot, "cjs", `${name}.js`).replace(/\\/g, "/"),
+      module: join(this.options.projectRoot, "esm", `${name}.mjs`).replace(/\\/g, "/"),
+      "umd:main": join(this.options.projectRoot, "umd", `${name}.js`).replace(/\\/g, "/"),
       scripts: { build: `${this._notSyncScript}rollup -c rollup.config.js` },
     });
 
@@ -68,8 +70,9 @@ export default class extends BaseGenerator<Options> {
   }
 
   protected _default(): void {
+    const { name } = parse(this.options.main || "index.js");
     this.mergePackage({
-      main: join(this.options.projectRoot, "index.js").replace(/\\/g, "/"),
+      main: join(this.options.projectRoot, `${name}.js`).replace(/\\/g, "/"),
       scripts: { build: `${this._notSyncScript}tsc --incremental` },
     });
 
