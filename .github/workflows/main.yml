@@ -17,31 +17,28 @@ jobs:
       - name: Begin CI...
         uses: actions/checkout@v2
 
-      - name: Use Node 12
-        uses: actions/setup-node@v1
+      - name: Use Node 14
+        uses: actions/setup-node@v2
         with:
-          node-version: 12.x
+          node-version: 14.x
 
-      # - name: Cache node modules (npm)
-      #   uses: actions/cache@v1
-      #   with:
-      #     path: ~/.npm # npm cache files are stored in `~/.npm` on Linux/macOS
-      #     key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-npm-
+      # Cache node modules. See cache examples here: https://github.com/actions/cache/blob/main/examples.md#node---yarn
+      # See Cache hit condition here: https://stackoverflow.com/questions/61010294/how-to-cache-yarn-packages-in-github-actions/62244232#62244232
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
 
       - name: Cache node modules (yarn)
-        uses: actions/cache@v1
+        uses: actions/cache@v2
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
         with:
-          path: ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - name: Install dependencies
-        run: yarn # npm install --no-audit # `npm ci` is not used, because `node_modules` are cached, and `npm ci` deletes `node_modules`.
-        env:
-          CI: true
+      - name: Install project dependencies
+        run: yarn
 
       - name: Run ESLint
         run: yarn lint --no-fix
