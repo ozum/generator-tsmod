@@ -7,11 +7,12 @@
     // "allowJs": true,                       // Allow javascript files to be compiled. schema
     // "checkJs": true,                       // Report errors in .js files. schema
     // "jsx": "preserve",                     // Specify JSX code generation: 'preserve', 'react-native', or 'react'. schema
+
     "declaration": true, // Generates corresponding '.d.ts' file. schema
     "declarationMap": true, // Generates a sourcemap for each corresponding '.d.ts' file. schema
     "sourceMap": true, // Generates corresponding '.map' file. schema
     // "outFile": "./",                       // Concatenate and emit output to single file. schema
-    "outDir": "../../dist", // Redirect output structure to the directory. schema
+    "outDir": "../../generators", // Redirect output structure to the directory. schema
     // "rootDir": "./",                       // Specify the root directory of input files. Use to control the output directory structure with --outDir. schema
     // "composite": true,                     // Enable project compilation schema
     // "incremental": true,                   // Enable incremental compilation schema

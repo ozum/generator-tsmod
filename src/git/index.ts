@@ -26,7 +26,7 @@ export default class extends Generator<Options> {
     this.copyTemplate(".commitlintrc", ".commitlintrc");
     this.copyTemplate(".czrc", ".czrc");
     this.addCreatedDir(".github");
-    this.copyDependencies("commitizen", "@commitlint/cli", "@commitlint/config-conventional");
+    this.copyDependencies({ dependencies: ["commitizen", "@commitlint/cli", "@commitlint/config-conventional"] });
 
     try {
       this.originUrl = await originUrl(this.destinationPath());

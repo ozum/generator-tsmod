@@ -40,7 +40,7 @@ export default class extends Generator<Options> {
     const coverage = this.options.coverage ? " --coverage" : "";
 
     this._deleteDefaultTestScript();
-    this.copyDependencies("@types/jest", "jest", "ts-jest");
+    this.copyDependencies({ dependencies: ["@types/jest", "jest", "ts-jest"] });
     this.copyConfig("jest.config.js", undefined, this.props);
     this.copyTemplate("test/tsconfig.json", "test/tsconfig.json");
     this.mergePackage({ scripts: { test: `${notSync}jest${coverage}` } });

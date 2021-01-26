@@ -42,6 +42,8 @@ interface Options {
   importHelpers: boolean;
   notSync: boolean;
   notSyncPaths: string;
+  builder: "rollup";
+  main: string;
 }
 
 export default class extends Generator<Options> {
@@ -74,9 +76,10 @@ export default class extends Generator<Options> {
    * Use `mem-fs`s own methods to inform it newly created `package.json`.
    */
   protected async _npmInit(): Promise<void> {
-    this.spawnCommandSync("npm", ["init"]);
-    const pkg = await readFile(this.destinationPath("package.json"), { encoding: "utf8" });
-    this.writeDestination("package.json", pkg);
+    this.spawnCommandSync("npm", ["init", "--yes"]);
+    const pkg = JSON.parse(await readFile(this.destinationPath("package.json"), { encoding: "utf8" }));
+    delete pkg.main;
+    this.writeDestinationJSON("package.json", pkg);
   }
 
   protected async prompting(): Promise<void> {
@@ -105,9 +108,9 @@ export default class extends Generator<Options> {
 
     const pkg = this.readDestinationPackage();
 
-    this.copyDependencies("walkdir");
+    this.copyDependencies({ dependencies: ["walkdir"] });
     this.copyTemplate("scripts/tsmod.js", path.join("module-files/scripts/tsmod.js"));
-    this.copyScripts("release");
+    this.copyScripts({ scripts: ["release"] });
 
     // Because of combined input related more than one generator, "postinstall" script is written here. Not elegant, but required.
     const postInstall = this.options.notSync || this.options.notSyncPaths ? "(husky install && npm run not-sync)" : "husky install";
@@ -126,7 +129,12 @@ export default class extends Generator<Options> {
     this.composeWith(require.resolve("../typescript"), this.options);
     if (this.options.vuepress) this.composeWith(require.resolve("../vuepress"), this.options);
     if (this.options.boilerplate)
-      this.composeWith(require.resolve("../boilerplate"), { arguments: ["index.ts"], dir: "src", testPlace: "root", ...this.options });
+      this.composeWith(require.resolve("../boilerplate"), {
+        arguments: [`${this.options.main}.ts`],
+        dir: "src",
+        testPlace: "root",
+        ...this.options,
+      });
     if ((this.options.license || pkg.license) && !this.existsDestination("LICENSE")) {
       this.composeWith(require.resolve("generator-license/app"), {
         ...this.options,
@@ -159,7 +167,7 @@ export default class extends Generator<Options> {
       {
         name: "keywords",
         message: "Package keywords (comma to split)",
-        when: !pkg.keywords,
+        when: !pkg.keywords || pkg.keywords.length === 0,
         filter: (words: string) => words.split(/\s*,\s*/g),
       },
       {

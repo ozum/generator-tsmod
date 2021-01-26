@@ -16,6 +16,7 @@ export function getOptions<T extends Generator.GeneratorOptions = Generator.Gene
     readme: { type: String, description: "Content to insert in the README.md file" },
     vuepress: { type: Boolean, description: "Add VuePress site support" },
     typedoc: { type: Boolean, default: true, description: "Add TypeDoc support" },
+    main: { type: String, default: "index", description: "main file for 'package.json' (without extension or project root)." },
 
     /** Boilerplate */
     dir: { type: String, default: "src", description: "Directory to create source file into" },
@@ -43,7 +44,6 @@ export function getOptions<T extends Generator.GeneratorOptions = Generator.Gene
       description:
         "Disable synchronization of default paths with cloud storage such as iCloudDrive, Dropbox or OneDirve. To add additional paths use --not-sync-paths.",
     },
-
     notSyncPaths: {
       type: String,
       description: "Directories (as CSV) to disable synchronization with cloud storage such as iCloudDrive, Dropbox or OneDirve.",
@@ -53,6 +53,7 @@ export function getOptions<T extends Generator.GeneratorOptions = Generator.Gene
 
     /** typescript (Additionally: projectRoot) */
     importHelpers: { type: Boolean, default: true, description: "Import emit helpers from 'tslib'. schema for TypeScript" },
+    builder: { type: String, description: "Builder to use. (rollup)" },
   };
 }
 

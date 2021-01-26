@@ -12,9 +12,7 @@
           "scripts.test": "npm run not-sync && jest --coverage",
           "types": "generators/index.d.ts"
         },
-        "normal": {
-          "devDependencies.not-sync": "^1.1.1"
-        }
+        "normal": {}
       }
     },
     "addedFilesSafe": {

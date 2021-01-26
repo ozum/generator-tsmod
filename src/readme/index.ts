@@ -11,8 +11,8 @@ export default class extends BaseGenerator<Options> {
 
   protected configuring(): void {
     this.copyTemplate("installation", "module-files/template-partials/installation");
-    this.copyScripts("readme");
-    this.copyDependencies("readmeasy");
+    this.copyScripts({ scripts: ["readme"] });
+    this.copyDependencies({ dependencies: ["readmeasy"] });
     this.renderTemplateSafe("README.njk.ejs", "README.njk", { typedoc: this.options.typedoc });
   }
 }

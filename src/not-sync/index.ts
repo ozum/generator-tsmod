@@ -1,5 +1,4 @@
 import { notSync } from "not-sync";
-import { promises as fs } from "fs";
 import BaseGenerator from "../generator";
 import type { OptionNames } from "../options";
 
@@ -19,18 +18,16 @@ export default class extends BaseGenerator<Options> {
     paths.push(this.options.projectRoot, ...createTimePaths);
     if (this.options.coverage) paths.push("coverage");
 
-    await Promise.all(createTimePaths.map((path) => fs.mkdir(this.destinationPath(path), { recursive: true })));
-    await notSync(createTimePaths, { cwd: this.destinationPath(".") });
+    await notSync(createTimePaths, { cwd: this.destinationPath("."), createDirs: true });
 
     const sourcePkg = this.readSourcePackage();
     const notSyncVersion = sourcePkg.dependencies?.["not-sync"] as string;
 
     // "not-sync": "node module-files/scripts/tsmod.js not-sync dist,coverage,node_modules",
-    this.mergePackage({ devDependencies: { "not-sync": notSyncVersion } }, { safe: false });
+    if (!this.targetItself) this.mergePackage({ devDependencies: { "not-sync": notSyncVersion } }, { safe: false });
     this.mergePackage({
       scripts: {
         "not-sync": `node module-files/scripts/tsmod.js not-sync ${paths.join(",")}`,
-        // postinstall: "npm run not-sync",
       },
     });
   }

@@ -142,8 +142,8 @@ export default abstract class Base<T extends Generator.GeneratorOptions = Option
   }
 
   /** Read and return `package.json` file located in templates directory. `undefined` if not available.  */
-  protected readTemplatePackage(): PackageJson | undefined {
-    return this.fs.readJSON(join(this.templatePath("package.json"))) as PackageJson | undefined;
+  protected readTemplatePackage(dir: string): PackageJson | undefined {
+    return this.fs.readJSON(join(this.templatePath(join(dir, "package.json")))) as PackageJson | undefined;
   }
 
   /** Merges given data with destination `package.json` and writes it after ordering keys. */
@@ -208,22 +208,22 @@ export default abstract class Base<T extends Generator.GeneratorOptions = Option
    *
    * @param scriptNames are script names to copy.
    */
-  protected copyScripts(...scriptNames: string[]): void {
+  protected copyScripts({ scripts = [], dir = "" }: { scripts?: string[]; dir?: string } = {}): void {
     const sourcePkg = this.readSourcePackage();
-    const templatePackage = this.readTemplatePackage();
-    this.mergePackage({ scripts: { ...pick(sourcePkg.scripts, scriptNames), ...templatePackage?.scripts } });
+    const templatePackage = this.readTemplatePackage(dir);
+    this.mergePackage({ scripts: { ...pick(sourcePkg.scripts, scripts), ...templatePackage?.scripts } });
   }
 
   /**
-   * Copies given dependencies with same type (normal, dev or peer) and same version from this module's package to destination.
-   * Also copies all dependencies from template `package.json` too.
+   * Copies given dependencies with same type (normal, dev or peer) and same version from source module's package to destination.
    * If dependency is not found on source `package.json` or template `package.json`, it is not added.
+   * Copies all dependencies from template `package.json` in template directory or in given subdir of template directory.
    *
    * @param dependencies are list of dependencies to copy.
    */
-  protected copyDependencies(...dependencies: string[]): void {
+  protected copyDependencies({ dependencies = [], dir = "" }: { dependencies?: string[]; dir?: string } = {}): void {
     const sourcePkg = this.readSourcePackage();
-    const templatePackage = this.readTemplatePackage();
+    const templatePackage = this.readTemplatePackage(dir);
     const data: Record<string, Record<string, string>> = {};
     const types = DependencyTypes;
 
@@ -355,5 +355,9 @@ export default abstract class Base<T extends Generator.GeneratorOptions = Option
     overwritePaths.forEach((path) => this.copyTemplate(join("overwrite", path), path));
     const dontOverwritePaths = await fastGlob("**/*", { dot: true, cwd: this.templatePath("dont-overwrite") });
     dontOverwritePaths.forEach((path) => this.copyTemplateSafe(join("dont-overwrite", path), path));
+  }
+
+  protected get targetItself(): boolean {
+    return this.readDestinationPackage()?.name === this.readSourcePackage()?.name;
   }
 }

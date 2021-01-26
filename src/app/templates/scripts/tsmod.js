@@ -1,7 +1,7 @@
-/* eslint-disable no-use-before-define, import/no-extraneous-dependencies */
+/* eslint-disable no-use-before-define, import/no-extraneous-dependencies, import/no-unresolved */
 const os = require("os");
 const { promises: fs, readFileSync } = require("fs");
-const { sep, join, normalize, basename, dirname } = require("path");
+const { sep, join, normalize, basename, dirname, parse } = require("path");
 const childProcess = require("child_process");
 const { notSync } = require("not-sync");
 const readmeasy = require("readmeasy").default;
@@ -11,6 +11,14 @@ const pkg = JSON.parse(readFileSync(join(cwd, "package.json"), { encoding: "utf8
 
 const walk = hasDependency("typedoc") ? require("walkdir") : undefined;
 const concatMd = hasDependency("typedoc") ? require("concat-md").default : undefined;
+
+/**
+ * Returns entry file for TypeDoc. Uses basename of main entry in 'package.json' file and prefixes it with 'src'.
+ */
+function getTypeDocEntry() {
+  const { name } = parse(pkg.main);
+  return normalize(`src/${name}.ts`);
+}
 
 function hasDependency(moduleName) {
   const hasNormalDependency = pkg.dependencies && pkg.dependencies[moduleName];
@@ -61,7 +69,7 @@ async function md({ out, singleFile }) {
     "none",
     "--out",
     tmpDir,
-    normalize("src/index.ts"),
+    getTypeDocEntry(),
   ];
 
   if (hasDependency("vuepress")) options.unshift("--platform", "vuepress");
@@ -98,7 +106,7 @@ async function html({ out }) {
   const bin = join(cwd, "node_modules/.bin/typedoc");
 
   await fs.rmdir(out, { recursive: true });
-  await spawn(bin, ["--plugin", "typedoc-plugin-example-tag", "--out", out, normalize("src/index.ts")], { stdio: "inherit" });
+  await spawn(bin, ["--plugin", "typedoc-plugin-example-tag", "--out", out, getTypeDocEntry()], { stdio: "inherit" });
 }
 
 /**
@@ -138,10 +146,14 @@ async function vuepressApi() {
   // intermodular.log("info", "VuePress site updated.");
 }
 
+/**
+ * Creates given directories and disables cloud storage syncroonization.
+ *
+ * @param {string[]} dirs are directories to create and disable syncronization.
+ */
 async function applyNotSync(dirs) {
   if (!hasDependency("not-sync")) return;
-  await Promise.all(dirs.map((dir) => fs.mkdir(join(cwd, dir), { recursive: true })));
-  await notSync(dirs);
+  await notSync(dirs, { createDirs: true });
 }
 
 const commands = {
