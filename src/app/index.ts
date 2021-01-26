@@ -28,7 +28,6 @@ interface Props {
 
 interface Options {
   name: string;
-  boilerplate: boolean;
   cli: boolean;
   license: boolean;
   githubAccount: string;
@@ -128,13 +127,6 @@ export default class extends Generator<Options> {
     if (this.options.typedoc) this.composeWith(require.resolve("../typedoc"), this.options);
     this.composeWith(require.resolve("../typescript"), this.options);
     if (this.options.vuepress) this.composeWith(require.resolve("../vuepress"), this.options);
-    if (this.options.boilerplate)
-      this.composeWith(require.resolve("../boilerplate"), {
-        arguments: [`${this.options.main}.ts`],
-        dir: "src",
-        testPlace: "root",
-        ...this.options,
-      });
     if ((this.options.license || pkg.license) && !this.existsDestination("LICENSE")) {
       this.composeWith(require.resolve("generator-license/app"), {
         ...this.options,
