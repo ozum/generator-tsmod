@@ -25,6 +25,7 @@ export function getOptions<T extends Generator.GeneratorOptions = Generator.Gene
     /** git */
     githubAccount: { type: String, description: "GitHub username or organization" },
     repositoryName: { type: String, description: "Name of the GitHub repository" },
+    githubWorkflow: { type: String, description: "(CSV) Features to be added GitHub workflow. Options: (pg)" },
 
     /** jest (Additionally: projectRoot) */
     testEnvironment: { type: String, description: "Test environment (jsdom or node)" },

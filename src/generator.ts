@@ -238,19 +238,24 @@ export default abstract class Base<T extends Generator.GeneratorOptions = Option
     this.mergePackage(data, { safe: false });
   }
 
+  writeDestination = (...args: Parameters<Generator["writeDestination"]>): ReturnType<Generator["writeDestination"]> => {
+    this.#fileModificationTimes[args[0]] = undefined;
+    return super.writeDestination(...args);
+  };
+
   copyTemplate = (...args: Parameters<Generator["copyTemplate"]>): ReturnType<Generator["copyTemplate"]> => {
-    super.copyTemplate(...args);
     this.#fileModificationTimes[args[1]] = undefined;
+    return super.copyTemplate(...args);
   };
 
   renderTemplate = (...args: Parameters<Generator["renderTemplate"]>): ReturnType<Generator["renderTemplate"]> => {
-    super.renderTemplate(...args);
     this.#fileModificationTimes[getStringPath(args[1] ?? args[0])] = undefined;
+    return super.renderTemplate(...args);
   };
 
   deleteDestination = (...args: Parameters<Generator["deleteDestination"]>): ReturnType<Generator["deleteDestination"]> => {
-    super.deleteDestination(...args);
     this.#fileModificationTimes[getStringPath(args[0])] = undefined;
+    return super.deleteDestination(...args);
   };
 
   protected addToAddedFiles(file: string): void {

@@ -1,10 +1,13 @@
 import originUrl from "git-remote-origin-url";
+import { dump } from "js-yaml";
 import Generator from "../generator";
 import type { OptionNames } from "../options";
+import { getWorkflow } from "./workflow";
 
 interface Options {
   githubAccount: string;
   repositoryName: string;
+  githubWorkflow: string;
 }
 
 /**
@@ -14,15 +17,16 @@ interface Options {
  * - Adds GitHub workflows.
  */
 export default class extends Generator<Options> {
-  protected static optionNames: OptionNames = ["githubAccount", "repositoryName"];
+  protected static optionNames: OptionNames = ["githubAccount", "repositoryName", "githubWorkflow"];
   private originUrl?: string;
 
   protected async configuring(): Promise<void> {
     const pkg = this.readDestinationPackage();
+    const workflowFeatures = this.options.githubWorkflow ? this.options.githubWorkflow.split(",") : [];
 
     this.copyTemplate(".gitattributes", ".gitattributes");
     this.copyTemplateNoLog("_gitignore", ".gitignore");
-    this.copyTemplate("workflows/main.yml", ".github/workflows/main.yml");
+    this.writeDestination(".github/workflows/main.yml", dump(getWorkflow(workflowFeatures), { lineWidth: 400, condenseFlow: true }));
     this.copyTemplate(".commitlintrc", ".commitlintrc");
     this.copyTemplate(".czrc", ".czrc");
     this.addCreatedDir(".github");

@@ -43,6 +43,7 @@ interface Options {
   notSyncPaths: string;
   builder: "rollup";
   main: string;
+  githubWorkflow: string;
 }
 
 export default class extends Generator<Options> {
@@ -119,7 +120,11 @@ export default class extends Generator<Options> {
     if (this.options.notSync || this.options.notSyncPaths) this.composeWith(require.resolve("../not-sync"), this.options);
     this.composeWith(require.resolve("../editorconfig"), this.options);
     this.composeWith(require.resolve("../eslint"), this.options);
-    this.composeWith(require.resolve("../git"), { githubAccount: this.props.githubAccount, repositoryName: this.props.repositoryName });
+    this.composeWith(require.resolve("../git"), {
+      ...this.options,
+      githubAccount: this.props.githubAccount,
+      repositoryName: this.props.repositoryName,
+    });
     this.composeWith(require.resolve("../husky"), this.options);
     this.composeWith(require.resolve("../jest"), { testEnvironment: "node", ...this.options });
     this.composeWith(require.resolve("../lint-staged"), this.options);
