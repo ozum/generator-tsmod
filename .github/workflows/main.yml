@@ -1,5 +1,5 @@
 name: CI / CD
-'on':
+"on":
   push:
     branches:
       - master
@@ -9,7 +9,7 @@ name: CI / CD
       - beta
   pull_request:
     branches:
-      - '*'
+      - "*"
 jobs:
   build:
     runs-on: ubuntu-latest
