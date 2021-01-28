@@ -59,14 +59,16 @@ const scriptsStart = [
   "release",
   "test",
   "readme",
-  "typedoc:html",
-  "typedoc:md",
-  "typedoc:single-md",
   "build",
+  "docs:build",
+  "docs:dev",
   "postinstall",
   "prepublish",
+  "prepublishOnly",
   "postpublish",
-  "generate",
+  "not-sync",
+  "tsmod",
+  "yo:update",
 ];
 
 /**

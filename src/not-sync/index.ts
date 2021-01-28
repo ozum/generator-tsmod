@@ -27,7 +27,7 @@ export default class extends BaseGenerator<Options> {
     if (!this.targetItself) this.mergePackage({ devDependencies: { "not-sync": notSyncVersion } }, { safe: false });
     this.mergePackage({
       scripts: {
-        "not-sync": `node module-files/scripts/tsmod.js not-sync ${paths.join(",")}`,
+        "not-sync": `npm run tsmod not-sync not-sync ${paths.join(",")}`,
       },
     });
   }

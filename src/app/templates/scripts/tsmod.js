@@ -32,6 +32,15 @@ async function createTempDir() {
   return path;
 }
 
+/** Remove directory if it exists. */
+async function rmdirIfExists(path) {
+  try {
+    await fs.rmdir(path, { recursive: true });
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+}
+
 async function spawn(cmd, args, options) {
   const ps = await childProcess.spawn(cmd, args, options);
   return new Promise((resolve, reject) =>
@@ -50,11 +59,13 @@ async function spawn(cmd, args, options) {
  * @param out is output directory or file for generated markdown.
  * @param singleFile is whether to combine all output into single markdown file.
  */
-async function md({ out, singleFile }) {
+async function md({ out, singleFile = false }) {
   // rm -rf api-docs-md && typedoc  --plugin typedoc-plugin-example-tag,typedoc-plugin-markdown --excludeExternals --excludePrivate --excludeProtected --exclude 'src/bin/**/*' --theme markdown --readme none --out api-docs-md src/index.ts && find api-docs-md -name \"index.md\" -exec sh -c 'mv \"$1\" \"${1%index.md}\"index2.md' - {} \\;
   // const cwd = getCwd();
   const bin = join(cwd, "node_modules/.bin/typedoc");
-  const tmpDir = await createTempDir();
+  const outDir = singleFile ? await createTempDir() : out;
+  if (!singleFile) await rmdirIfExists(outDir);
+
   const options = [
     "--plugin",
     "typedoc-plugin-example-tag,typedoc-plugin-markdown",
@@ -68,30 +79,49 @@ async function md({ out, singleFile }) {
     "--readme",
     "none",
     "--out",
-    tmpDir,
+    outDir,
     getTypeDocEntry(),
   ];
-
-  if (hasDependency("vuepress")) options.unshift("--platform", "vuepress");
 
   try {
     await spawn(bin, options, { stdio: "inherit" });
 
-    // Rename all "index.md" files as "index2.md"
-    const createdFiles = await walk.async(tmpDir);
-    createdFiles.filter((file) => basename(file) === "index.md").forEach((file) => fs.rename(file, join(dirname(file), "index2.md")));
+    // Rename all "index.md" files as "index2.md", because VuePress treats "index.md" special. Renaming does not matter, because title comes from front-matter.
+    const createdFiles = await walk.async(outDir);
+    await Promise.all(createdFiles.map((file) => addFrontMatterToMd(file)));
+
+    await Promise.all(
+      createdFiles.filter((file) => basename(file) === "index.md").map((file) => fs.rename(file, join(dirname(file), "index2.md")))
+    );
   } catch (error) {
-    if (singleFile) await fs.rmdir(tmpDir, { recursive: true });
+    if (singleFile) await rmdirIfExists(outDir);
     throw error;
   }
 
   if (singleFile) {
-    const apiDoc = await concatMd(tmpDir, { dirNameAsTitle: true });
+    const apiDoc = await concatMd(outDir, { dirNameAsTitle: true });
     fs.writeFile(out, apiDoc);
-    await fs.rmdir(tmpDir, { recursive: true });
-  } else {
-    await fs.rmdir(out, { recursive: true });
-    await fs.rename(tmpDir, out);
+    await rmdirIfExists(outDir);
+  }
+}
+
+/**
+ * Add "front-matter" title to given markdown file using first level 1 title.
+ *
+ * @param {string} file is the file to add front matter title.
+ */
+async function addFrontMatterToMd(file) {
+  try {
+    const content = await fs.readFile(file, { encoding: "utf8" });
+    // If file has front-matter (---) do not touch.
+    if (content.match(new RegExp("^s+---"))) return;
+
+    // "# Class: User" results in "User". "# User" results in "User".
+    const firstTitleMatch = content.match(new RegExp("^[^#]+?#\\s+(.+?)\\r?\\n", "s"));
+    const firstTitle = firstTitleMatch !== null && firstTitleMatch[1] ? firstTitleMatch[1].replace(/.+?:\s+/, "") : undefined;
+    if (firstTitle) await fs.writeFile(file, `---\ntitle: ${firstTitle}\n---\n\n${content}`);
+  } catch (error) {
+    if (error.code !== "EISDIR") throw error;
   }
 }
 
@@ -105,7 +135,7 @@ async function html({ out }) {
   // const cwd = getCwd();
   const bin = join(cwd, "node_modules/.bin/typedoc");
 
-  await fs.rmdir(out, { recursive: true });
+  await rmdirIfExists(out);
   await spawn(bin, ["--plugin", "typedoc-plugin-example-tag", "--out", out, getTypeDocEntry()], { stdio: "inherit" });
 }
 
@@ -135,15 +165,15 @@ async function readme() {
 async function vuepressApi() {
   // npm-run-all -p typedoc:md typedoc:html && rm -rf docs/nav.02.api docs/.vuepress/public/api-site && mv api-docs-md docs/nav.02.api && mv api-docs-html docs/.vuepress/public/api-site && cp assets/typedoc/01.typedoc-iframe.md docs/nav.02.api/ && NODE_ENV=production vuepress build docs
 
-  // const cwd = getCwd();
   const mdPath = join(cwd, "docs/nav.02.api");
   const htmlPath = join(cwd, "docs/.vuepress/public/api-site");
-  const iframePath = join(cwd, "module-files/01.typedoc-iframe.md");
+  const iframePath = join(cwd, "module-files/vuepress/01.typedoc-iframe.md");
 
   await Promise.all([md({ out: mdPath }), html({ out: htmlPath })]);
+  // await md({ out: mdPath });
+  // await html({ out: htmlPath });
+  await fs.mkdir(mdPath, { recursive: true });
   await fs.copyFile(iframePath, join(mdPath, basename(iframePath))); // Don't put this in `Promise.all` with `md` and `html`. It needs first directory created. Otherwise file is copied same name with directory, since there is no directory yet.
-  // await intermodular.targetModule.execute("vuepress", ["build", "docs"], { env: { NODE_ENV: "production" } });
-  // intermodular.log("info", "VuePress site updated.");
 }
 
 /**

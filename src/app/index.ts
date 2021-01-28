@@ -110,7 +110,7 @@ export default class extends Generator<Options> {
 
     this.copyDependencies({ dependencies: ["walkdir"] });
     this.copyTemplate("scripts/tsmod.js", path.join("module-files/scripts/tsmod.js"));
-    this.copyScripts({ scripts: ["release"] });
+    this.copyScripts({ scripts: ["release", "tsmod"] });
 
     // Because of combined input related more than one generator, "postinstall" script is written here. Not elegant, but required.
     const postInstall = this.options.notSync || this.options.notSyncPaths ? "(husky install && npm run not-sync)" : "husky install";
