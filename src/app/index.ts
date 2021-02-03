@@ -7,7 +7,7 @@ import { promises } from "fs";
 import Generator from "../generator";
 import { parseModuleName, parseAuthor, validatePackageName } from "./util";
 import type { Person } from "./util";
-import { getArgv } from "../utils/helper";
+import { getArgv, getModuleNameWithoutScope } from "../utils/helper";
 import { getOptions, OptionNames } from "../options";
 
 const { readFile } = promises;
@@ -58,14 +58,14 @@ export default class extends Generator<Options> {
 
   protected async initializing(): Promise<void> {
     if (!this.existsDestination("package.json")) await this._npmInit();
-
     const pkg = this.readDestinationPackage();
+
     this.props = {
       name: this.options.name ?? pkg.name,
       description: pkg.description,
       version: pkg.version,
       homepage: pkg.homepage,
-      repositoryName: this.options.repositoryName || (pkg.repository as string) || this.options.name || pkg.name,
+      repositoryName: this.options.repositoryName || (pkg.repository as string) || getModuleNameWithoutScope(this.options.name || pkg.name),
       githubAccount: this.options.githubAccount ?? (await readGitUser()).username ?? this.props.scopeName,
       author: parseAuthor(pkg.author),
     };
@@ -101,10 +101,9 @@ export default class extends Generator<Options> {
       ],
       keywords: this.props.keywords,
       engines: { node: ">= 12.0.0" },
-      scripts: {
-        "yo:update": `yo tsmod:uninstall --no-install --force && yo ${getArgv()}`,
-      },
     });
+
+    this.addScripts({ "yo:update": `yo tsmod:uninstall --no-install --force && yo ${getArgv()}` });
 
     const pkg = this.readDestinationPackage();
 
@@ -112,12 +111,7 @@ export default class extends Generator<Options> {
     this.copyTemplate("scripts/tsmod.js", path.join("module-files/scripts/tsmod.js"));
     this.copyScripts({ scripts: ["release", "tsmod"] });
 
-    // Because of combined input related more than one generator, "postinstall" script is written here. Not elegant, but required.
-    const postInstall = this.options.notSync || this.options.notSyncPaths ? "(husky install && npm run not-sync)" : "husky install";
-    this.mergePackage({ scripts: { postinstall: `is-ci || ${postInstall}` } });
-
     // Compositions
-    if (this.options.notSync || this.options.notSyncPaths) this.composeWith(require.resolve("../not-sync"), this.options);
     this.composeWith(require.resolve("../editorconfig"), this.options);
     this.composeWith(require.resolve("../eslint"), this.options);
     this.composeWith(require.resolve("../git"), {
@@ -143,6 +137,7 @@ export default class extends Generator<Options> {
       });
       this.addToAddedFiles("LICENSE");
     }
+    if (this.options.notSync || this.options.notSyncPaths) this.composeWith(require.resolve("../not-sync"), this.options);
   }
 
   private async _fillModuleNameDetails(): Promise<void> {

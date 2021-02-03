@@ -22,6 +22,8 @@ type Hash = string;
 type DependencyName = string;
 type Version = string;
 type DataPath = string;
+type ScriptName = string;
+type ScriptText = string;
 
 export interface AddedData {
   normal: Record<DataPath, any>;
@@ -79,6 +81,7 @@ export default abstract class Base<T extends Generator.GeneratorOptions = Option
   }
 
   private async beforeConflicts(): Promise<void> {
+    this.config.delete("createdScripts");
     await this.sortPackage();
     await this.populateFileModificationTimes();
     super.deleteDestination("temp-added-data.json");
@@ -211,7 +214,53 @@ export default abstract class Base<T extends Generator.GeneratorOptions = Option
   protected copyScripts({ scripts = [], dir = "" }: { scripts?: string[]; dir?: string } = {}): void {
     const sourcePkg = this.readSourcePackage();
     const templatePackage = this.readTemplatePackage(dir);
-    this.mergePackage({ scripts: { ...pick(sourcePkg.scripts, scripts), ...templatePackage?.scripts } });
+    const combinedScripts = { ...pick(sourcePkg.scripts, scripts), ...templatePackage?.scripts };
+    this.addScripts(combinedScripts);
+  }
+
+  /**
+   * Checks whether a package.json script is added by a generator.
+   *
+   * @param name is the name of the package.json script.
+   */
+  protected willScriptAddedByGenerator(name: string): boolean {
+    const destinationScripts = this.readDestinationPackage().scripts || {};
+    return destinationScripts[name] === undefined || this.config.getPath(["createdScripts", name] as any);
+  }
+
+  /**
+   * Marks given package.json script is added by a generator.
+   *
+   * @param name is the name of the package.json script.
+   */
+  protected markScriptAddedByGenerator(name: string): void {
+    this.config.setPath(["createdScripts", name] as any, true);
+  }
+
+  /**
+   * Adds scripts to `package.json`. If multiple generator calls for same script name, they will be combined with '&&`.
+   *
+   * @param scripts are the scripts to be added package.json.
+   * @param prepend is whether to add script at the beginning of the scripts.
+   * @example
+   * this.addScripts({ "postinstall": "install husky" });         // "postinstall": "install husky"
+   * this.addScripts({ "postinstall": "not-sync node_modules" }); // "postinstall": "(install husky) && (not-sync node_modules)"
+   */
+  protected addScripts(scripts: Record<ScriptName, ScriptText | undefined>, { prepend = false } = {}): void {
+    const destinationScripts = this.readDestinationPackage().scripts || {};
+    const combinedScripts: typeof destinationScripts = {};
+
+    Object.entries(scripts).forEach(([name, script]) => {
+      if (script === undefined || !this.willScriptAddedByGenerator(name)) return;
+      this.markScriptAddedByGenerator(name);
+      const addParenthesis = destinationScripts[name] !== undefined && !destinationScripts[name]?.startsWith("(");
+      const destinationScript = addParenthesis ? `(${destinationScripts[name]})` : destinationScripts[name];
+
+      if (destinationScript)
+        combinedScripts[name] = prepend ? `(${script}) && ${destinationScript}` : `${destinationScript} && (${script})`;
+      else combinedScripts[name] = script;
+    });
+    this.mergePackage({ scripts: combinedScripts }, { overwrite: true });
   }
 
   /**
@@ -278,12 +327,12 @@ export default abstract class Base<T extends Generator.GeneratorOptions = Option
     if (this.isSafe(args[1])) super.copyTemplate(...args);
   }
 
-  /** Copy template, but do not add to log. */
+  /** Copy template, but do not add to log. Like it is created by user manually. */
   protected copyTemplateNoLog(...args: Parameters<Generator["copyTemplate"]>): ReturnType<Generator["copyTemplate"]> {
     super.copyTemplate(...args);
   }
 
-  /** Render template, but do not add to log. */
+  /** Render template, but do not add to log. Like it is created by user manually. */
   protected renderTemplateNoLog(...args: Parameters<Generator["renderTemplate"]>): ReturnType<Generator["renderTemplate"]> {
     super.renderTemplate(...args);
   }

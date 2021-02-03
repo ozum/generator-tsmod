@@ -42,18 +42,15 @@ export default class extends BaseGenerator<Options> {
     return this.options.builder ? (BUILDER[this.options.builder] as any) : "_default";
   }
 
-  protected get _notSyncScript(): string {
-    return this.options.notSync || this.options.notSyncPaths ? "npm run not-sync && " : "";
-  }
-
   protected _rollup(): void {
     const { name } = parse(this.options.main || "index.js");
     this.mergePackage({
       main: join(this.options.projectRoot, "cjs", `${name}.js`).replace(/\\/g, "/"),
       module: join(this.options.projectRoot, "esm", `${name}.mjs`).replace(/\\/g, "/"),
       "umd:main": join(this.options.projectRoot, "umd", `${name}.js`).replace(/\\/g, "/"),
-      scripts: { build: `${this._notSyncScript}rollup -c rollup.config.js` },
     });
+
+    this.addScripts({ build: `rollup -c rollup.config.js` });
 
     const config = {
       target: "ESNEXT",
@@ -71,10 +68,8 @@ export default class extends BaseGenerator<Options> {
 
   protected _default(): void {
     const { name } = parse(this.options.main || "index.js");
-    this.mergePackage({
-      main: join(this.options.projectRoot, `${name}.js`).replace(/\\/g, "/"),
-      scripts: { build: `${this._notSyncScript}tsc --incremental` },
-    });
+    this.mergePackage({ main: join(this.options.projectRoot, `${name}.js`).replace(/\\/g, "/") });
+    this.addScripts({ build: `tsc --incremental` });
 
     const config = {
       target: "ES2018",

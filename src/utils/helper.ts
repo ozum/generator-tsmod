@@ -57,11 +57,14 @@ const scriptsStart = [
   "lint",
   "format",
   "release",
+  "pretest",
   "test",
   "readme",
+  "prebuild",
   "build",
   "docs:build",
   "docs:dev",
+  "preinstall",
   "postinstall",
   "prepublish",
   "prepublishOnly",
@@ -221,4 +224,18 @@ export function getArgv(): string {
     .slice(2)
     .map((arg) => `'${arg.replace(/'/g, "'\\''")}'`)
     .join(" ");
+}
+
+/**
+ * Gets module name without scope.
+ *
+ * @param name is the module name.
+ * @returns module name without scope.
+ * @example
+ * getModuleNameWithoutScope("@ozum/some-moduke"); // some-module
+ */
+// export function getModuleNameWithoutScope(name: undefined): undefined {}
+// export function getModuleNameWithoutScope(name: string): string;
+export function getModuleNameWithoutScope<T extends string | undefined>(name: T): T {
+  return (name === undefined ? undefined : name.replace(/@(.+?)\//, "")) as T;
 }

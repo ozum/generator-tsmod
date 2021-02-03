@@ -7,9 +7,9 @@
           "engines.node": ">= 12.0.0",
           "files": ["generators", "!generators/**/@(*.spec|*.test)*", "!generators/**/__test__", "module-files", "@types"],
           "main": "generators/index.js",
-          "scripts.not-sync": "npm run tsmod not-sync not-sync generators,node_modules,coverage",
-          "scripts.postinstall": "is-ci || (husky install && npm run not-sync)",
-          "scripts.test": "npm run not-sync && jest --coverage",
+          "scripts.build": "not-sync generators && tsc --incremental",
+          "scripts.preinstall": "npx not-sync node_modules",
+          "scripts.test": "not-sync coverage && jest --coverage",
           "types": "generators/index.d.ts"
         },
         "normal": {}

@@ -26,7 +26,7 @@ export default class extends Generator<Options> {
 
     this.copyTemplate(".gitattributes", ".gitattributes");
     this.copyTemplateNoLog("_gitignore", ".gitignore");
-    this.writeDestination(".github/workflows/main.yml", dump(getWorkflow(workflowFeatures), { lineWidth: 400, condenseFlow: true }));
+    this.writeDestination(".github/workflows/main.yml", dump(getWorkflow(workflowFeatures, pkg), { lineWidth: 400, condenseFlow: true }));
     this.copyTemplate(".commitlintrc", ".commitlintrc");
     this.copyTemplate(".czrc", ".czrc");
     this.addCreatedDir(".github");

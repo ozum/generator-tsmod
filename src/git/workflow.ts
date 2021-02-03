@@ -1,8 +1,9 @@
 /* eslint-disable no-template-curly-in-string */
+import type { PackageJson } from "../generator";
 
 type Step = Record<string, any>;
 
-const featureSteps: Record<string, Step[]> = {
+const preDefaultFeatureSteps: Record<string, Step[]> = {
   // Use preinstalled PostgreSQL on GitHub runner.
   pg: [
     { name: "Start PostgreSQL on Ubuntu", run: "sudo systemctl start postgresql.service\npg_isready\n" },
@@ -14,37 +15,12 @@ const featureSteps: Record<string, Step[]> = {
   ],
 };
 
-const defaultSteps: Step[] = [
-  { name: "Begin CI...", uses: "actions/checkout@v2" },
-  { name: "Use Node 14", uses: "actions/setup-node@v2", with: { "node-version": "14.x" } },
+const postDefaultFeatureSteps: Record<string, Step[]> = {};
 
-  // Cache node modules. See cache examples here: https://github.com/actions/cache/blob/main/examples.md#node---yarn
-  // See Cache hit condition here: https://stackoverflow.com/questions/61010294/how-to-cache-yarn-packages-in-github-actions/62244232#62244232
-  { name: "Get yarn cache directory path", id: "yarn-cache-dir-path", run: 'echo "::set-output name=dir::$(yarn cache dir)"' },
-  {
-    name: "Cache node modules (yarn)",
-    uses: "actions/cache@v2",
-    id: "yarn-cache", // use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-    with: {
-      path: "${{ steps.yarn-cache-dir-path.outputs.dir }}",
-      key: "${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}",
-      "restore-keys": "${{ runner.os }}-yarn-\n",
-    },
-  },
-  { name: "Install project dependencies", run: "yarn" },
-  { name: "Run ESLint", run: "yarn lint --no-fix" },
-  { name: "Run Prettier", run: "yarn format --no-write --check" },
-  { name: "Test", run: "yarn test --ci --coverage --maxWorkers=2", env: { CI: true } },
-  { name: "Build", run: "yarn build", env: { CI: true } },
-  {
-    name: "Release",
-    if: "github.event_name == 'push' && github.ref == 'refs/heads/master'",
-    env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}", NPM_TOKEN: "${{ secrets.NPM_TOKEN }}" },
-    run: "npx semantic-release",
-  },
-];
+export function getWorkflow(features: Array<keyof typeof preDefaultFeatureSteps> = [], pkg: PackageJson): Record<string, any> {
+  const registry = pkg?.publishConfig?.registry === "https://npm.pkg.github.com/" ? "github" : "npm";
+  const NPM_TOKEN = registry === "npm" ? "${{ secrets.NPM_TOKEN }}" : "${{ secrets.GITHUB_TOKEN }}";
 
-export function getWorkflow(features: Array<keyof typeof featureSteps> = []): Record<string, any> {
   const workflow = {
     name: "CI / CD",
     on: { push: { branches: ["master", "next", "next-major", "alpha", "beta"] }, pull_request: { branches: ["*"] } },
@@ -59,10 +35,47 @@ export function getWorkflow(features: Array<keyof typeof featureSteps> = []): Re
     },
   };
 
-  const workflowSteps: Step[] = workflow.jobs.build.steps;
+  const defaultSteps: Step[] = [
+    { name: "Begin CI...", uses: "actions/checkout@v2" },
+    { name: "Use Node 14", uses: "actions/setup-node@v2", with: { "node-version": "14.x" } },
 
-  features.forEach((feature) => workflowSteps.push(...featureSteps[feature]));
-  workflowSteps.push(...defaultSteps);
+    // Cache node modules. See cache examples here: https://github.com/actions/cache/blob/main/examples.md#node---yarn
+    // See Cache hit condition here: https://stackoverflow.com/questions/61010294/how-to-cache-yarn-packages-in-github-actions/62244232#62244232
+    { name: "Get yarn cache directory path", id: "yarn-cache-dir-path", run: 'echo "::set-output name=dir::$(yarn cache dir)"' },
+    {
+      name: "Cache node modules (yarn)",
+      uses: "actions/cache@v2",
+      id: "yarn-cache", // use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+      with: {
+        path: "${{ steps.yarn-cache-dir-path.outputs.dir }}",
+        key: "${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}",
+        "restore-keys": "${{ runner.os }}-yarn-\n",
+      },
+    },
+    { name: "Install project dependencies", run: "yarn" },
+    { name: "Run ESLint", run: "yarn lint --no-fix" },
+    { name: "Run Prettier", run: "yarn format --no-write --check" },
+    { name: "Test", run: "yarn test --ci --maxWorkers=2", env: { CI: true } },
+    { name: "Build", run: "yarn build", env: { CI: true } },
+    {
+      name: "Release",
+      if: "github.event_name == 'push' && github.ref == 'refs/heads/master'",
+      env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}", NPM_TOKEN },
+      run: "npx semantic-release",
+    },
+  ];
+
+  const workflowSteps: Step[] = workflow.jobs.build.steps;
+  const preDeafultSteps: Step[] = [];
+  const postDeafultSteps: Step[] = [];
+
+  features.forEach((feature) => {
+    if (preDefaultFeatureSteps[feature]) preDeafultSteps.push(...preDefaultFeatureSteps[feature]);
+    else if (postDefaultFeatureSteps[feature]) postDeafultSteps.push(...postDefaultFeatureSteps[feature]);
+  });
+
+  workflowSteps.push(...preDeafultSteps, ...defaultSteps, ...postDeafultSteps);
+
   return workflow;
 }
 
