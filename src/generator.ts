@@ -1,4 +1,9 @@
 /* eslint-disable no-return-assign, @typescript-eslint/ban-ts-comment, @typescript-eslint/no-var-requires */
+
+// TODO: Detect changing files using `this.fs` instead of complex and slow file comparisons.
+// * Add a special generator for updating logs.
+// See: https://github.com/yeoman/generator/issues/1273
+
 import Generator from "yeoman-generator";
 import { parse, join } from "path";
 import type { JSONSchemaForNPMPackageJsonFiles as PackageJson } from "@schemastore/package";
