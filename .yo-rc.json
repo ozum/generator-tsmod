@@ -7,9 +7,10 @@
           "engines.node": ">= 12.0.0",
           "files": ["generators", "!generators/**/@(*.spec|*.test)*", "!generators/**/__test__", "module-files", "@types"],
           "main": "generators/index.js",
-          "scripts.build": "not-sync generators && tsc --incremental",
+          "scripts.build": "tsc --incremental",
           "scripts.preinstall": "npx not-sync node_modules",
-          "scripts.test": "not-sync coverage && jest --coverage",
+          "scripts.pretest": "not-sync coverage",
+          "scripts.test": "jest --coverage",
           "types": "generators/index.d.ts"
         },
         "normal": {}
