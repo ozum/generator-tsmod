@@ -2,37 +2,32 @@ import BaseGenerator from "../generator";
 import type { OptionNames } from "../options";
 
 interface Options {
-  notSyncPaths: string;
   coverage: boolean;
   projectRoot: string;
 }
 
 /**  Copies "not-sync" dependency and adds custom "not-sync" paths if available. */
 export default class extends BaseGenerator<Options> {
-  protected static optionNames: OptionNames = ["notSyncPaths", "coverage", "projectRoot"];
+  protected static optionNames: OptionNames = ["coverage", "projectRoot"];
 
   protected async configuring(): Promise<void> {
-    // if (!this.targetItself) this._copyPackage();
     const targetsNotSyncyModule = this.readDestinationPackage().name === "not-sync";
-    const installScriptName = targetsNotSyncyModule ? "postinstall" : "preinstall";
-    const bin = targetsNotSyncyModule ? "npm run not-sync-bin" : "not-sync";
-    const installBin = targetsNotSyncyModule ? bin : "npx not-sync";
+    const targetsNotSyncyCLIModule = this.readDestinationPackage().name === "not-sync-cli";
+    const bin = targetsNotSyncyModule ? "npm run not-sync" : "not-sync";
 
-    if (!targetsNotSyncyModule) this.copyDependencies({ dependencies: ["not-sync"] });
+    if (targetsNotSyncyModule) {
+      this.addScripts(
+        { postinstall: `npm run not-sync node_modules`, "not-sync": "npm run execute src/bin/not-sync.ts" },
+        { prepend: true }
+      );
+    } else {
+      if (!targetsNotSyncyCLIModule) this.copyDependencies({ dependencies: ["not-sync"] }); // It already has it on normal dependencies.
+      this.addScripts({ preinstall: `npx not-sync node_modules` }, { prepend: true });
+    }
 
-    this.addScripts(
-      { [installScriptName]: `${installBin} node_modules`, prebuild: `${bin} ${this.options.projectRoot}` },
-      { prepend: true }
-    );
+    this.addScripts({ prebuild: `${bin} ${this.options.projectRoot}` });
+    this.copyScripts({ scripts: ["prepublishOnly", "postpublish"] });
     if (this.options.coverage) this.addScripts({ pretest: `${bin} coverage` }, { prepend: true });
-    if (this.options.notSyncPaths) this.addScripts({ "not-sync": `not-sync ${this._pathsCSV}` });
-  }
-
-  /** not-sync paths as CSV */
-  protected get _pathsCSV(): string {
-    const customPaths = (this.options.notSyncPaths ?? "").split(",");
-    const paths = ["node_modules", this.options.projectRoot, ...customPaths];
-    if (this.options.coverage) paths.push("coverage");
-    return paths.join(",");
+    this.copyDependencies({ dependencies: ["@ozum/pinst", "is-ci"] });
   }
 }

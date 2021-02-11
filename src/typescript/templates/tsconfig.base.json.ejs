@@ -68,18 +68,18 @@
     "skipLibCheck": true,                     // Skip type checking of declaration files.
     "forceConsistentCasingInFileNames": true, // Disallow inconsistently-cased references to the same file.
   },
-  // "include": ["../../src///"],
+  "include": ["../../src/**/*"],
   "exclude": [
     "../../node_modules",
     "../../node_modules.nosync",
-    "../..///.test.ts",
-    "../..///.spec.ts",
-    "../..///.e2e.ts",
-    "../..////test-helper",
+    "../../**/*.test.ts",
+    "../../**/*.spec.ts",
+    "../../**/*.e2e.ts",
+    "../../**/*/test-helper",
     <% if(declarationDir) { %>"declarationDir": "../../<%- declarationDir %>",<% } %>
     "../../<%- outDir -%>"
   ],
   "typedocOptions": {
-    "exclude": ["../..///+(.test|.spec|.e2e).ts", "///test-helper///"]
+    "exclude": ["../../**/*+(.test|.spec|.e2e).ts", "/*/test-helper/**/*"]
   }
 }

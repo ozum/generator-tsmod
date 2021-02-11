@@ -42,12 +42,7 @@ export function getOptions<T extends Generator.GeneratorOptions = Generator.Gene
     notSync: {
       type: Boolean,
       default: true,
-      description:
-        "Disable synchronization of default paths with cloud storage such as iCloudDrive, Dropbox or OneDirve. To add additional paths use --not-sync-paths.",
-    },
-    notSyncPaths: {
-      type: String,
-      description: "Directories (as CSV) to disable synchronization with cloud storage such as iCloudDrive, Dropbox or OneDirve.",
+      description: "Disable synchronization of default paths with cloud storage such as iCloudDrive.",
     },
 
     /** readme (Additionally: testPlace) */

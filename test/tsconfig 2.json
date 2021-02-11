@@ -1,6 +1,0 @@
-{
-  "extends": "../module-files/configs/tsconfig.json",
-  "include": ["**/*"],
-  "exclude": ["test-helper"],
-  "compilerOptions": {}
-}

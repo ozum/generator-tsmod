@@ -256,7 +256,8 @@ export default abstract class Base<T extends Generator.GeneratorOptions = Option
     const combinedScripts: typeof destinationScripts = {};
 
     Object.entries(scripts).forEach(([name, script]) => {
-      if (script === undefined || !this.willScriptAddedByGenerator(name)) return;
+      const hasSame = (destinationScripts[name] || "").includes(script || "");
+      if (script === undefined || !this.willScriptAddedByGenerator(name) || hasSame) return;
       this.markScriptAddedByGenerator(name);
       const addParenthesis = destinationScripts[name] !== undefined && !destinationScripts[name]?.startsWith("(");
       const destinationScript = addParenthesis ? `(${destinationScripts[name]})` : destinationScripts[name];

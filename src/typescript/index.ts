@@ -4,8 +4,6 @@ import type { OptionNames } from "../options";
 
 interface Options {
   projectRoot: string;
-  notSync: boolean;
-  notSyncPaths: string;
   builder?: "rollup";
   main?: string;
 }
@@ -16,15 +14,12 @@ const BUILDER = {
 
 /**  Configures project for TypeScript. */
 export default class extends BaseGenerator<Options> {
-  protected static optionNames: OptionNames = ["projectRoot", "main", "notSync", "notSyncPaths", "builder"];
+  protected static optionNames: OptionNames = ["projectRoot", "main", "builder"];
 
   /** Adds `main`, `types` and `files` entries to `package.json` and  copies `tsconfig.json` (if not exists)  and `tsconfig.base.json` (overwrites) files. */
   protected configuring(): void {
     const { name } = parse(this.options.main || "index.js");
-    this.mergePackage({
-      types: join(this.options.projectRoot, `${name}.d.ts`).replace(/\\/g, "/"),
-      files: ["@types"],
-    });
+    this.mergePackage({ types: join(this.options.projectRoot, `${name}.d.ts`).replace(/\\/g, "/") });
 
     const dependencies = ["@types/node", "ts-node-dev", "typescript"];
     this.copyScripts({ scripts: ["watch", "execute"] });

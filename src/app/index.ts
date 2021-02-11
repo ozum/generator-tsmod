@@ -39,7 +39,6 @@ interface Options {
   coverage: boolean;
   reinstall: boolean;
   notSync: boolean;
-  notSyncPaths: string;
   builder: "rollup";
   main: string;
   githubWorkflow: string;
@@ -136,7 +135,7 @@ export default class extends Generator<Options> {
       });
       this.addToAddedFiles("LICENSE");
     }
-    if (this.options.notSync || this.options.notSyncPaths) this.composeWith(require.resolve("../not-sync"), this.options);
+    if (this.options.notSync) this.composeWith(require.resolve("../not-sync"), this.options);
   }
 
   private async _fillModuleNameDetails(): Promise<void> {
