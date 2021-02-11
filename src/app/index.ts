@@ -38,7 +38,6 @@ interface Options {
   typedoc: boolean;
   coverage: boolean;
   reinstall: boolean;
-  importHelpers: boolean;
   notSync: boolean;
   notSyncPaths: string;
   builder: "rollup";

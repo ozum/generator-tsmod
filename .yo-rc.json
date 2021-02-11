@@ -5,7 +5,7 @@
       "package.json": {
         "safe": {
           "engines.node": ">= 12.0.0",
-          "files": ["generators", "!generators/**/@(*.spec|*.test)*", "!generators/**/__test__", "module-files", "@types"],
+          "files": ["generators", "!generators/**/@(*.spec|*.test)*", "!generators/**/__test__", "module-files"],
           "main": "generators/index.js",
           "scripts.build": "tsc --incremental",
           "scripts.preinstall": "npx not-sync node_modules",

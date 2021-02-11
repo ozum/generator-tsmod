@@ -53,7 +53,6 @@ export function getOptions<T extends Generator.GeneratorOptions = Generator.Gene
     /** readme (Additionally: testPlace) */
 
     /** typescript (Additionally: projectRoot) */
-    importHelpers: { type: Boolean, default: true, description: "Import emit helpers from 'tslib'. schema for TypeScript" },
     builder: { type: String, description: "Builder to use. (rollup)" },
   };
 }

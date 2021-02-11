@@ -4,7 +4,6 @@ import type { OptionNames } from "../options";
 
 interface Options {
   projectRoot: string;
-  importHelpers: boolean;
   notSync: boolean;
   notSyncPaths: string;
   builder?: "rollup";
@@ -17,7 +16,7 @@ const BUILDER = {
 
 /**  Configures project for TypeScript. */
 export default class extends BaseGenerator<Options> {
-  protected static optionNames: OptionNames = ["projectRoot", "main", "importHelpers", "notSync", "notSyncPaths", "builder"];
+  protected static optionNames: OptionNames = ["projectRoot", "main", "notSync", "notSyncPaths", "builder"];
 
   /** Adds `main`, `types` and `files` entries to `package.json` and  copies `tsconfig.json` (if not exists)  and `tsconfig.base.json` (overwrites) files. */
   protected configuring(): void {
@@ -28,8 +27,6 @@ export default class extends BaseGenerator<Options> {
     });
 
     const dependencies = ["@types/node", "ts-node-dev", "typescript"];
-    if (this.options.importHelpers) dependencies.push("tslib");
-
     this.copyScripts({ scripts: ["watch", "execute"] });
     this.copyDependencies({ dependencies });
 
@@ -56,7 +53,6 @@ export default class extends BaseGenerator<Options> {
       target: "ESNEXT",
       module: "ESNext",
       outDir: this.options?.projectRoot ?? "dist",
-      importHelpers: this.options?.importHelpers ?? false,
       declarationDir: "dist",
     };
 
@@ -69,13 +65,12 @@ export default class extends BaseGenerator<Options> {
   protected _default(): void {
     const { name } = parse(this.options.main || "index.js");
     this.mergePackage({ main: join(this.options.projectRoot, `${name}.js`).replace(/\\/g, "/") });
-    this.addScripts({ build: `tsc --incremental` });
+    this.addScripts({ build: `tsc` });
 
     const config = {
-      target: "ES2018",
+      target: "ES2020",
       module: "commonjs",
       outDir: this.options?.projectRoot ?? "dist",
-      importHelpers: this.options?.importHelpers ?? false,
       declarationDir: undefined,
     };
 
