@@ -16,7 +16,7 @@ export function getOptions<T extends Generator.GeneratorOptions = Generator.Gene
     readme: { type: String, description: "Content to insert in the README.md file" },
     vuepress: { type: Boolean, description: "Add VuePress site support" },
     typedoc: { type: Boolean, default: true, description: "Add TypeDoc support" },
-    main: { type: String, default: "index", description: "main file for 'package.json' (without extension or project root)." },
+    main: { type: String, default: "dist/index.js", description: "main file for 'package.json' (without extension or project root)." },
 
     /** Boilerplate */
     dir: { type: String, default: "src", description: "Directory to create source file into" },

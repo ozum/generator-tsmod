@@ -18,7 +18,8 @@ export default class extends BaseGenerator<Options> {
 
   /** Adds `main`, `types` and `files` entries to `package.json` and  copies `tsconfig.json` (if not exists)  and `tsconfig.base.json` (overwrites) files. */
   protected configuring(): void {
-    const { name } = parse(this.options.main || "index.js");
+    this.deleteDefaultMain();
+    const { name } = parse(this.options.main || "dist/index.js");
     this.mergePackage({ types: join(this.options.projectRoot, `${name}.d.ts`).replace(/\\/g, "/") });
 
     const dependencies = ["@types/node", "ts-node-dev", "typescript"];
@@ -26,6 +27,13 @@ export default class extends BaseGenerator<Options> {
     this.copyDependencies({ dependencies });
 
     this[this._builderMethod]();
+  }
+
+  /** Deletes default main entry from package.json */
+  protected deleteDefaultMain(): void {
+    const pkg = this.readDestinationPackage();
+    if (pkg.main === "index.js") delete pkg.main;
+    this.writeDestinationJSON("package.json", pkg);
   }
 
   protected get _builderMethod(): "_rollup" | "_default" {
