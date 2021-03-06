@@ -59,7 +59,7 @@ export function getWorkflow(features: Array<keyof typeof preDefaultFeatureSteps>
     { name: "Build", run: "yarn build", env: { CI: true } },
     {
       name: "Release",
-      if: "github.event_name == 'push' && github.ref == 'refs/heads/master'",
+      if: "github.event_name == 'push'", // "&& github.ref == 'refs/heads/master'",
       env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}", NPM_TOKEN },
       run: "npx semantic-release",
     },
