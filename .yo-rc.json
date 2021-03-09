@@ -1,21 +1,14 @@
 {
   "generator-tsmod": {
+    "createdDirs": ["module-files", ".github", ".husky"],
     "addedData": {
       "package.json": {
         "safe": {
-          "engines.node": ">= 12.0.0",
-          "files": ["generators", "!generators/**/@(*.spec|*.test)*", "!generators/**/__test__", "module-files"],
-          "main": "generators/index.js",
-          "scripts.build": "tsc",
-          "scripts.preinstall": "npx not-sync node_modules",
-          "scripts.pretest": "not-sync coverage",
-          "scripts.test": "jest --coverage",
-          "types": "generators/index.d.ts"
+          "files": []
         },
         "normal": {}
       }
     },
-    "createdDirs": ["module-files", ".github", ".husky"],
     "addedFilesSafe": {
       "jest.config.js": "0bd134f06add10c42a03e4b115aef2a323e4b136",
       "lint-staged.config.js": "cbb09ecb17251589a793f69fea1a59c20f82a2c5",
