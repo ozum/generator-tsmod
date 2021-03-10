@@ -53,7 +53,7 @@ export default class extends BaseGenerator<Options> {
     this.addScripts({ build: `rollup -c rollup.config.js` });
 
     const config = {
-      target: "ESNEXT",
+      target: "ES2019",
       module: "ESNext",
       outDir: this.options?.projectRoot ?? "dist",
       declarationDir: "dist",
@@ -71,7 +71,7 @@ export default class extends BaseGenerator<Options> {
     this.addScripts({ build: `tsc` });
 
     const config = {
-      target: "ES2020",
+      target: "ES2019",
       module: "commonjs",
       outDir: this.options?.projectRoot ?? "dist",
       declarationDir: undefined,

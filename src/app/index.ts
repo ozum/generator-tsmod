@@ -86,7 +86,6 @@ export default class extends Generator<Options> {
   }
 
   protected configuring(): void {
-    const sourcePkg = this.readSourcePackage();
     this.mergePackage({
       name: this.props.name,
       version: "0.0.0",
@@ -99,7 +98,7 @@ export default class extends Generator<Options> {
         "module-files",
       ],
       keywords: this.props.keywords,
-      engines: { node: sourcePkg?.engines?.node ?? "14.0.0" },
+      engines: { node: ">=12.0.0" },
     });
 
     this.addScripts({ "yo:update": `yo tsmod:uninstall --no-install --force && yo ${getArgv()}` });
