@@ -1,4 +1,4 @@
-const ignorePatterns = [".nosync", "<rootDir>/generators/", "<rootDir>/node_modules/", "/test-helper/", "/__test__/"];
+const ignorePatterns = [".nosync", "<rootDir>/generators/", "<rootDir>/node_modules/", "/test-helper/", "/__test__/", "<rootDir>/src/bin/"];
 
 module.exports = {
   preset: "ts-jest",
