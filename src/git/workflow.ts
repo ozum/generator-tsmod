@@ -37,6 +37,11 @@ export function getWorkflow(features: Array<keyof typeof preDefaultFeatureSteps>
 
   const defaultSteps: Step[] = [
     { name: "Begin CI...", uses: "actions/checkout@v2" },
+    {
+      name: "Set environment variables from file.",
+      shell: "bash",
+      run: 'while read line; do\n  echo "$line" >> $GITHUB_ENV\ndone < .github/workflows/github.env',
+    },
     { name: "Use Node 14", uses: "actions/setup-node@v2", with: { "node-version": "14.x" } },
 
     // Cache node modules. See cache examples here: https://github.com/actions/cache/blob/main/examples.md#node---yarn

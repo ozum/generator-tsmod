@@ -23,6 +23,7 @@ export default class extends Generator<Options> {
   protected async configuring(): Promise<void> {
     const pkg = this.readDestinationPackage();
     const workflowFeatures = this.options.githubWorkflow ? this.options.githubWorkflow.split(",") : [];
+    const githubEnvPath = ".github/workflows/github.env";
 
     this.copyTemplate(".gitattributes", ".gitattributes");
     this.copyTemplateNoLog("_gitignore", ".gitignore");
@@ -31,6 +32,9 @@ export default class extends Generator<Options> {
     this.copyTemplate(".czrc", ".czrc");
     this.addCreatedDir(".github");
     this.copyDependencies({ dependencies: ["commitizen", "@commitlint/cli", "@commitlint/config-conventional"] });
+
+    // Add env file for github workflows if not exists.
+    if (!this.existsDestination(githubEnvPath)) this.copyTemplateNoLog("github.env", githubEnvPath);
 
     try {
       this.originUrl = await originUrl(this.destinationPath());

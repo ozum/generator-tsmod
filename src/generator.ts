@@ -343,7 +343,7 @@ export default abstract class Base<T extends Generator.GeneratorOptions = Option
     super.renderTemplate(...args);
   }
 
-  /** Renden only if destination file is created by this generator, but do not add to log. */
+  /** Render only if destination file is created by this generator, but do not add to log. */
   protected renderTemplateSafeNoLog(...args: Parameters<Generator["renderTemplate"]>): ReturnType<Generator["renderTemplate"]> {
     const destination = getStringPath(args[1] ?? args[0]);
     if (this.isSafe(destination)) super.renderTemplate(...args);
