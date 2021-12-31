@@ -1,54 +1,15 @@
 import Generator from "../generator";
-import type { OptionNames } from "../options";
-
-const JEST_ENV = ["jsdom", "node"];
-
-interface Options {
-  testEnvironment: "jsdom" | "node";
-  projectRoot: string;
-  coverage: boolean;
-}
-
-type Props = Options;
+import { OptionNames } from "../options";
 
 /** Adds Jest configuration to project. */
-export default class extends Generator<Options> {
-  private props: Props = this.options;
-  protected static optionNames: OptionNames = ["testEnvironment", "projectRoot", "coverage"];
-
-  protected async prompting(): Promise<void> {
-    const prompts = [
-      {
-        type: "list",
-        name: "testEnvironment",
-        message: "What environment do you want to use",
-        choices: JEST_ENV,
-        default: this.options.testEnvironment,
-        when: JEST_ENV.indexOf(this.options.testEnvironment) === -1,
-      },
-    ];
-
-    const answers = await this.prompt(prompts);
-    this.props = { ...this.props, ...answers };
-  }
+export default class extends Generator {
+  protected static optionNames: OptionNames = [];
 
   /** Copy dependencies and configuration files and add `test` script to `package.json`. */
   protected configuring(): void {
-    const coverage = this.options.coverage ? " --coverage" : "";
-
-    this._deleteDefaultTestScript();
-    this.copyDependencies({ dependencies: ["@types/jest", "jest", "ts-jest"] });
-    this.copyConfig("jest.config.js", undefined, this.props);
+    this.package.copyDependencies(this.sourcePackage, ["@types/jest", "jest", "ts-jest"]);
+    this.copyConfig("jest.config.js");
     this.copyTemplate("test/tsconfig.json", "test/tsconfig.json");
-    this.addScripts({ test: `jest${coverage}` });
-  }
-
-  protected _deleteDefaultTestScript(): void {
-    const destinationPackage = this.readDestinationPackage();
-    const destinationTestScript = destinationPackage.scripts?.test || "";
-    if (destinationTestScript.includes("no test specified")) {
-      delete destinationPackage?.scripts?.test;
-      this.writeDestinationJSON("package.json", destinationPackage);
-    }
+    this.package.copyScripts(this.sourcePackage, ["test"]);
   }
 }

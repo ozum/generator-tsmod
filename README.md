@@ -1,7 +1,5 @@
 # generator-tsmod
 
-Yeoman generator for TypeScript modules with opinionated workflow.
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 

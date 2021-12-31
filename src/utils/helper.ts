@@ -1,29 +1,11 @@
+import { extname } from "path";
 import uniq from "lodash.uniq";
 
 import isEqual from "lodash.isequal";
 import get from "lodash.get";
 import set from "lodash.set";
 import mapToObject from "array-map-to-object";
-import commentJson from "comment-json";
-import yaml from "js-yaml";
 import type { JSONSchemaForNPMPackageJsonFiles as PackageJson } from "@schemastore/package"; // eslint-disable-line import/order
-import { extname } from "path";
-import _hash from "object-hash";
-import { promises as fs } from "fs";
-import swc = require("@swc/core");
-import type { AddedData, File } from "../generator"; // eslint-disable-line @typescript-eslint/no-unused-vars,  import/first
-
-export type HashOptions = Parameters<typeof _hash>[1];
-
-/**
- * .yo-rc.json configuration structure.
- */
-export interface Config {
-  addedFilesSafe: Record<File, string>; // file_name: sha1
-  addedFiles: File[];
-  addedData: Record<File, AddedData>;
-  createdDirs: string[];
-}
 
 const packageKeysStart = [
   "name",
@@ -73,6 +55,10 @@ const scriptsStart = [
   "tsmod",
   "yo:update",
 ];
+
+export function cleanConfigFileName(fileName: string): string {
+  return fileName.replace(/^_/, "").replace(new RegExp(`.base(${extname(fileName)})$`), "$1");
+}
 
 /**
  * Returns all given arrays and values concatenated as duplicate free. Does not modify inputs.
@@ -140,77 +126,68 @@ export function sortPackageKeys(data: PackageJson): PackageJson {
   return result;
 }
 
-/**
- * Parses given string and returns format and object. If no format given, tries to parse first as json using JSON5, then yaml.
- *
- * @ignore
- * @param content is string to parse
- * @param rootDataPath is the path to return data from.
- * @returns parsed object or input string.
- * @throws `Error` if data cannot be parsed.
- * @example
- * parseString('{"a": { "b": {"c": 1} } }', "a.b"); // Parses and returns "a.b" path: { c: 1 }
- */
-function parseObject(content: string, rootDataPath?: string | string[]): { format: "json" | "yaml"; data: any } {
-  const errors: Error[] = [];
+// /**
+//  * Parses given string and returns format and object. If no format given, tries to parse first as json using JSON5, then yaml.
+//  *
+//  * @ignore
+//  * @param content is string to parse
+//  * @param rootDataPath is the path to return data from.
+//  * @returns parsed object or input string.
+//  * @throws `Error` if data cannot be parsed.
+//  * @example
+//  * parseString('{"a": { "b": {"c": 1} } }', "a.b"); // Parses and returns "a.b" path: { c: 1 }
+//  */
+// function parseObject(content: string, rootDataPath?: string | string[]): { format: "json" | "yaml"; data: any } {
+//   const errors: Error[] = [];
 
-  try {
-    const data = commentJson.parse(content);
-    return { format: "json", data: rootDataPath ? get(data, rootDataPath as any) : data };
-  } catch (error) {
-    errors.push(error);
-  }
+//   try {
+//     const data = commentJson.parse(content);
+//     return { format: "json", data: rootDataPath ? get(data, rootDataPath as any) : data };
+//   } catch (error: any) {
+//     errors.push(error);
+//   }
 
-  try {
-    const data = yaml.load(content);
-    return { format: "yaml", data: rootDataPath ? get(data, rootDataPath as any) : data };
-  } catch (error) {
-    errors.push(error);
-  }
+//   try {
+//     const data = yaml.load(content);
+//     return { format: "yaml", data: rootDataPath ? get(data, rootDataPath as any) : data };
+//   } catch (error: any) {
+//     errors.push(error);
+//   }
 
-  const errorMessage = errors.reduce((previous, e) => `${previous}${e.name}: ${e.message}. `, "").trim();
-  throw new Error(`Cannot parse data. Supported formats are "json" and "yaml". ${errorMessage}`);
-}
+//   const errorMessage = errors.reduce((previous, e) => `${previous}${e.name}: ${e.message}. `, "").trim();
+//   throw new Error(`Cannot parse data. Supported formats are "json" and "yaml". ${errorMessage}`);
+// }
 
-function hashJs(input: string, type: "js" | "ts"): string {
-  const syntax: Record<string, "ecmascript" | "typescript"> = { js: "ecmascript", ts: "typescript" };
-  const parserOptions: swc.Options = { sourceMaps: true, minify: true, jsc: { parser: { syntax: syntax[type] } } };
-  const { code } = swc.transformSync(input, parserOptions);
-  return _hash({ code });
-}
+// function hashJs(input: string, type: "js" | "ts"): string {
+//   const syntax: Record<string, "ecmascript" | "typescript"> = { js: "ecmascript", ts: "typescript" };
+//   const parserOptions: swc.Options = { sourceMaps: true, minify: true, jsc: { parser: { syntax: syntax[type] } } };
+//   const { code } = swc.transformSync(input, parserOptions);
+//   return _hash({ code });
+// }
 
-function getHashType(file?: string): "js" | "ts" | undefined {
-  if (file === undefined) return undefined;
-  const fileType = extname(file).substring(1);
-  return fileType === "js" || fileType === "ts" ? fileType : undefined;
-}
+// function getHashType(file?: string): "js" | "ts" | undefined {
+//   if (file === undefined) return undefined;
+//   const fileType = extname(file).substring(1);
+//   return fileType === "js" || fileType === "ts" ? fileType : undefined;
+// }
 
-export function hash(rawData: unknown, options: { type?: "js" | "ts"; file?: string }): string | undefined {
-  if (rawData === undefined) return undefined;
-  const type = options?.type ?? getHashType(options.file);
+// export function hash(rawData: unknown, options: { type?: "js" | "ts"; file?: string }): string | undefined {
+//   if (rawData === undefined) return undefined;
+//   const type = options?.type ?? getHashType(options.file);
 
-  let data = rawData;
-  if (typeof data === "string") {
-    if (type === "js" || type === "ts") return hashJs(data, type);
-    try {
-      data = parseObject(data).data;
-    } catch (e) {} // eslint-disable-line no-empty
-  }
-  return _hash({ data }, { unorderedArrays: true });
-}
+//   let data = rawData;
+//   if (typeof data === "string") {
+//     if (type === "js" || type === "ts") return hashJs(data, type);
+//     try {
+//       data = parseObject(data).data;
+//     } catch (e) {} // eslint-disable-line no-empty
+//   }
+//   return _hash({ data }, { unorderedArrays: true });
+// }
 
-export async function getFileModificationTime(file: string): Promise<Date | undefined> {
-  try {
-    return (await fs.stat(file)).mtime;
-  } catch (error) {
-    if (error.code === "ENOENT") return undefined;
-    throw error;
-  }
-}
-
-export function getStringPath(filePath: string | string[]): string {
-  return Array.isArray(filePath) ? filePath.join("/") : filePath;
-}
+// export function getStringPath(filePath: string | string[]): string {
+//   return Array.isArray(filePath) ? filePath.join("/") : filePath;
+// }
 
 /**
  * Gets CLI commands from argv and single quotes every parameter.
@@ -232,7 +209,7 @@ export function getArgv(): string {
  * @param name is the module name.
  * @returns module name without scope.
  * @example
- * getModuleNameWithoutScope("@ozum/some-moduke"); // some-module
+ * getModuleNameWithoutScope("@ozum/some-module"); // some-module
  */
 // export function getModuleNameWithoutScope(name: undefined): undefined {}
 // export function getModuleNameWithoutScope(name: string): string;

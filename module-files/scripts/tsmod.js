@@ -33,15 +33,15 @@ async function createTempDir() {
 
 async function spawn(cmd, args, options) {
   const ps = await childProcess.spawn(cmd, args, options);
-  return new Promise((resolve, reject) =>
-    ps.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`ps process exited with code ${code}`))))
+  return new Promise(
+    (resolve, reject) => ps.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`ps process exited with code ${code}`)))) // eslint-disable-line no-promise-executor-return
   );
 }
 
 /** Remove directory recursively, but don't throw if it does not exist. */
 async function rmdir(path) {
   try {
-    await fs.rmdir(path, { recursive: true });
+    await fs.rm(path, { recursive: true });
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
   }
@@ -62,13 +62,10 @@ async function md({ out, singleFile = false }) {
   if (!singleFile) await rmdir(outDir);
 
   const options = [
-    "--plugin",
-    "typedoc-plugin-example-tag,typedoc-plugin-markdown,typedoc-plugin-param-names",
     "--excludeExternals",
     "--excludePrivate",
     "--exclude",
     "'src/bin/**/*'",
-    "--hideInPageTOC",
     "--readme",
     "none",
     "--out",
@@ -108,10 +105,10 @@ async function addFrontMatterToMd(file) {
   try {
     const content = await fs.readFile(file, { encoding: "utf8" });
     // If file has front-matter (---) do not touch.
-    if (content.match(new RegExp("^s+---"))) return;
+    if (content.match(/^s+---/)) return;
 
     // "# Class: User" results in "User". "# User" results in "User".
-    const firstTitleMatch = content.match(new RegExp("^[^#]+?#\\s+(.+?)\\r?\\n", "s"));
+    const firstTitleMatch = content.match(/^[^#]+?#\\s+(.+?)\\r?\\n/, "s");
     const firstTitle =
       firstTitleMatch !== null && firstTitleMatch[1] ? firstTitleMatch[1].replace(/.+?:\s+/, "").replace("@", "\\@") : undefined;
 

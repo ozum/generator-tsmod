@@ -1,5 +1,5 @@
 import Generator from "../generator";
-import type { OptionNames } from "../options";
+import { OptionNames } from "../options";
 
 /** Enables `.editorconfig` by copying configuration file to project root. */
 export default class extends Generator {

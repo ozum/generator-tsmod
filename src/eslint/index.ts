@@ -1,28 +1,26 @@
 import Generator from "../generator";
-import type { OptionNames } from "../options";
+import { OptionNames } from "../options";
 
-/** Enables and configures ESLint by adding scripts and dependebcies from this module's `package.json`.  */
+const dependencies = [
+  "@typescript-eslint/eslint-plugin",
+  "@typescript-eslint/parser",
+  "eslint",
+  "eslint-config-airbnb-base",
+  "eslint-config-prettier",
+  "eslint-plugin-import",
+  "eslint-plugin-jest",
+  "eslint-plugin-prettier",
+  "prettier",
+];
+
 export default class extends Generator {
   protected static optionNames: OptionNames = [];
 
-  /** Copies dependencies from this module to target module's package.json. Also modifies configurations. */
-  protected configuring(): void {
-    this.copyDependencies({
-      dependencies: [
-        "@typescript-eslint/eslint-plugin",
-        "@typescript-eslint/parser",
-        "eslint",
-        "eslint-config-airbnb-base",
-        "eslint-config-prettier",
-        "eslint-plugin-import",
-        "eslint-plugin-jest",
-        "eslint-plugin-prettier",
-        "prettier",
-      ],
-    });
-    this.copyScripts({ scripts: ["format", "lint"] });
+  protected writing(): void {
+    this.copyConfig("_.eslintrc.js");
+    this.copyConfig("_prettier.config.js");
     this.copyTemplate(".prettierignore", ".prettierignore");
-    this.copyConfig("_eslintrc.js", ".eslintrc.js");
-    this.copyConfig("_prettier.config.js", "prettier.config.js");
+    this.package.copyScripts(this.sourcePackage, ["format", "lint"]);
+    this.package.copyDependencies(this.sourcePackage, dependencies);
   }
 }

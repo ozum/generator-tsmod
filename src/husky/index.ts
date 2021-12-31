@@ -1,5 +1,5 @@
 import Generator from "../generator";
-import type { OptionNames } from "../options";
+import { OptionNames } from "../options";
 
 /** Enables husky support. */
 export default class extends Generator {
@@ -9,11 +9,9 @@ export default class extends Generator {
     this.copyTemplate(".husky/commit-msg", ".husky/commit-msg");
     this.copyTemplate(".husky/pre-commit", ".husky/pre-commit");
     this.copyTemplate(".husky/prepare-commit-msg", ".husky/prepare-commit-msg");
-    this.copyDependencies({ dependencies: ["husky", "@ozum/pinst", "is-ci"] });
-    this.addToAddedFiles(".husky/_/husky.sh");
-    this.addToAddedFiles(".husky/.gitignore");
-    this.addCreatedDir(".husky");
-    this.copyScripts({ scripts: ["prepublishOnly", "postpublish", "postinstall"] });
+
+    this.package.copyDependencies(this.sourcePackage, ["husky", "pinst", "is-ci"]);
+    this.package.copyScripts(this.sourcePackage, ["prepublishOnly", "postpublish", "postinstall"]);
   }
 
   protected end(): void {

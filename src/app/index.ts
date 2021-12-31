@@ -5,10 +5,10 @@ import type { JSONSchemaForNPMPackageJsonFiles as PackageJson } from "@schemasto
 import readGitUser from "read-git-user";
 import { promises } from "fs";
 import Generator from "../generator";
+import { OptionNames, optionDefinitions } from "../options";
 import { parseModuleName, parseAuthor, validatePackageName } from "./util";
 import type { Person } from "./util";
 import { getArgv, getModuleNameWithoutScope } from "../utils/helper";
-import { getOptions, OptionNames } from "../options";
 
 const { readFile } = promises;
 
@@ -16,13 +16,11 @@ const { name: authorName, email: authorEmail, url: authorUrl } = require("user-m
 
 interface Props {
   name: PackageJson["name"];
-  description?: PackageJson["description"];
   version?: PackageJson["version"];
   homepage?: PackageJson["homepage"];
   repositoryName?: string;
   githubAccount?: string;
   author?: Person;
-  keywords?: PackageJson["keywords"];
   scopeName?: string;
 }
 
@@ -38,7 +36,6 @@ interface Options {
   typedoc: boolean;
   coverage: boolean;
   reinstall: boolean;
-  notSync: boolean;
   builder: "rollup";
   main: string;
   githubWorkflow: string;
@@ -46,7 +43,7 @@ interface Options {
 
 export default class extends Generator<Options> {
   private props: Props = {} as any;
-  protected static optionNames: OptionNames = Object.keys(getOptions.apply({ options: {} })) as OptionNames;
+  protected static optionNames: OptionNames = Object.keys(optionDefinitions) as OptionNames;
 
   protected constructor(args: string | string[], options: Options) {
     super(args, options);
@@ -56,11 +53,10 @@ export default class extends Generator<Options> {
 
   protected async initializing(): Promise<void> {
     if (!this.existsDestination("package.json")) await this._npmInit();
-    const pkg = this.readDestinationPackage();
+    const pkg = this.destinationPackage;
 
     this.props = {
       name: this.options.name ?? pkg.name,
-      description: pkg.description,
       version: pkg.version,
       homepage: pkg.homepage,
       repositoryName: this.options.repositoryName || (pkg.repository as string) || getModuleNameWithoutScope(this.options.name || pkg.name),
@@ -86,30 +82,25 @@ export default class extends Generator<Options> {
   }
 
   protected configuring(): void {
-    this.mergePackage({
+    this.assign("package.json", {
       name: this.props.name,
       version: "0.0.0",
-      description: this.props.description,
       author: this.props.author,
-      files: [
-        this.options.projectRoot,
-        `!${this.options.projectRoot}/**/@(*.spec|*.test)*`,
-        `!${this.options.projectRoot}/**/__test__`,
-        "module-files",
-      ],
-      keywords: this.props.keywords,
       engines: { node: ">=12.0.0" },
     });
-
-    this.addScripts({ "yo:update": `yo tsmod:uninstall --no-install --force && yo ${getArgv()}` });
-
-    const pkg = this.readDestinationPackage();
-
-    this.copyDependencies({ dependencies: ["walkdir"] });
+    this.package.addFiles([
+      this.options.projectRoot,
+      `!${this.options.projectRoot}/**/@(*.spec|*.test)*`,
+      `!${this.options.projectRoot}/**/__test__`,
+      "config",
+      "module-files",
+    ]);
+    this.package.addScripts({ "yo:update": `yo ${getArgv()}` });
+    const pkg = this.destinationPackage;
+    this.package.copyDependencies(this.sourcePackage, ["walkdir"]);
     this.copyTemplate("scripts/tsmod.js", path.join("module-files/scripts/tsmod.js"));
-    this.copyScripts({ scripts: ["release", "tsmod"] });
-
-    // Compositions
+    this.package.copyScripts(this.sourcePackage, ["release", "tsmod"]);
+    // Compositions;
     this.composeWith(require.resolve("../editorconfig"), this.options);
     this.composeWith(require.resolve("../eslint"), this.options);
     this.composeWith(require.resolve("../git"), {
@@ -133,9 +124,7 @@ export default class extends Generator<Options> {
         license: pkg.license,
         defaultLicense: "MIT",
       });
-      this.addToAddedFiles("LICENSE");
     }
-    if (this.options.notSync) this.composeWith(require.resolve("../not-sync"), this.options);
   }
 
   private async _fillModuleNameDetails(): Promise<void> {
@@ -147,19 +136,11 @@ export default class extends Generator<Options> {
   }
 
   private async _fillDetails(): Promise<void> {
-    const pkg = this.readDestinationPackage();
     const prompts = [
-      { name: "description", message: "Description", when: !this.props.description },
       { name: "homepage", message: "Project homepage url", when: !this.props.homepage, default: this._urlFromOption },
       { name: "author.name", message: "Author's Name", when: !this.props.author?.name, default: authorName, store: true },
       { name: "author.email", message: "Author's Email", when: !this.props.author?.email, default: authorEmail, store: true },
       { name: "author.url", message: "Author's Homepage", when: !this.props.author?.url, default: authorUrl, store: true },
-      {
-        name: "keywords",
-        message: "Package keywords (comma to split)",
-        when: !pkg.keywords || pkg.keywords.length === 0,
-        filter: (words: string) => words.split(/\s*,\s*/g),
-      },
       {
         name: "githubAccount",
         message: "GitHub username or organization",

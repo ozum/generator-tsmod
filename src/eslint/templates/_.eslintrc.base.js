@@ -42,6 +42,7 @@ module.exports = {
         "import/extensions": ["error", "ignorePackages", { js: "never", mjs: "never", jsx: "never", ts: "never", tsx: "never" }],
         "@typescript-eslint/no-use-before-define": "off",
         "no-undef-init": "off", // To prevent "Variable is used before being assigned" TS errors.
+        "default-param-last": "off",
       },
       overrides: [
         {
@@ -63,6 +64,9 @@ module.exports = {
         "airbnb-base", // TURN ON airbnb-base rules.
         "plugin:prettier/recommended", // RUN Prettier as ESLint rule by using `prettier/eslint-plugin-prettier` and TURN OFF ESLint rules which conflict with Prettier by using `prettier/eslint-config-prettier`.
       ],
+      rules: {
+        "import/extensions": "off",
+      },
     },
   ],
 };

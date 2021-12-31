@@ -17,8 +17,21 @@ jobs:
       - run: echo ${{github.ref}}
       - run: echo Condition met
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      - name: Start PostgreSQL on Ubuntu
+        run: |
+          sudo systemctl start postgresql.service
+          pg_isready
+      - name: Create additional PostgreSQL user
+        run: |
+          sudo -u postgres psql --command="CREATE USER \"user\" PASSWORD 'password' SUPERUSER CREATEDB REPLICATION" --command="\du"
       - name: Begin CI...
         uses: actions/checkout@v2
+      - name: Set environment variables from file.
+        shell: bash
+        run: |-
+          while read line; do
+            echo "$line" >> $GITHUB_ENV
+          done < .github/workflows/github.env
       - name: Use Node 14
         uses: actions/setup-node@v2
         with:

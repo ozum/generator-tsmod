@@ -1,8 +1,14 @@
-import BaseGenerator from "../generator";
+import Generator from "../generator";
+import { OptionNames } from "../options";
 
 /**  Configures project for TypeDoc. */
-export default class extends BaseGenerator {
+export default class extends Generator {
+  protected static optionNames: OptionNames = [];
+
   protected configuring(): void {
-    this.copyDependencies();
+    this.package.copyDependencies();
+
+    // Delete dependencies added by previous versions of this generator.
+    this.package.removeDependencies(["typedoc-neo-theme"]);
   }
 }
